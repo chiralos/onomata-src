@@ -1,0 +1,65 @@
+
+"sieve" (sieve-start sieve-scan) def
+
+"sieve-start"
+( 0 set-top
+  0 set-i
+  a 2 0 poke-int # seed with candidate 2
+) def
+
+"sieve-scan" (check-prime (new-prime) (check-divisor) ife) def
+
+"new-prime"
+( candidate str write-line      # write it out
+  top inc set-top               # advance top
+  top nprimes lt                # check if we're done
+  (new-candidate)               # new candidate
+  ( )                           # we're done
+  ife
+) def
+
+"check-prime"
+(prime-i dup candidate swp div gt)
+def
+
+"new-candidate"
+( a top dec peek-int inc # new candidate
+  a swp top poke-int     # write into top pos
+  0 continue-scan        # reset i and continue
+) def
+
+"check-divisor"
+( candidate prime-i mod 0 eq
+  (got-divisor)                      # divisor, not a prime
+  (i inc continue-scan)              # not divisor, continue
+  ife
+) def
+
+"got-divisor"
+( candidate inc a swp top poke-int # increment candidate
+  0 continue-scan                  # reset i and continue
+) def 
+
+"continue-scan" (set-i sieve-scan) def
+
+"candidate" (a top peek-int) def
+"prime-i"   (a i peek-int) def
+
+"inc" (1 add) def
+"dec" (1 sub) def
+
+"top"       (vars 0 peek-int)     def
+"set-top"   (vars swp 0 poke-int) def
+"i"         (vars 1 peek-int)     def
+"set-i"     (vars swp 1 poke-int) def
+
+"sieve-init"
+("nprimes" (32) def
+"a" nprimes wordsize mul def-mem
+"vars" wordsize 2 mul def-mem
+)
+
+# HERE does not like nested defs
+#      not fundamentally, just the above
+
+

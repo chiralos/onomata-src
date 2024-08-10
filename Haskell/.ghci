@@ -1,0 +1,2 @@
+:set -package haskeline
+:set -package memory

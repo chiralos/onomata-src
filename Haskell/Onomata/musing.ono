@@ -1,0 +1,54 @@
+
+'test module
+'std/core/* import
+"non-tail-recursive factorial" rem
+(() (dup foo 1 sub mul) dup 2 lt ife) (end of line comment) rem
+'foo def
+'foo export
+make a table at compile time
+'table def
+
+vs
+
+'test                                 module
+'std/core/*                           import
+"non-tail-recursive factorial"        rem
+(() (dup foo 1 sub mul) dup 2 lt ife) 'foo def
+                                      'foo export
+make a table at compile time          'table def
+  
+vs
+
+:module test;
+:import std/core/*;
+:export foo;
+
+: non-tail recursive factorial
+:type Int (foo) typex -> Int; : synonym for 'theorem' - assume and prove
+:define foo -> () (dup foo 1 sub mul) dup 2 lt ife; : end of line commend
+:def foo () (dup foo 1 sub mul) dup 2 lt ife; : end of line commend
+
+make a table at compile time 'table def : probably can't be checked or optimised
+:const tbl make a table at compile time; : maybe we can check this ?
+: actually does
+:define tbl -> (make a table ...);
+: always signal compile-time constants ?
+
+
+
+:axiom cat typex -> swp (typex) dip typex;
+
+:prove Int (foo foo) typex -> Int;
+:proof 
+Int (foo foo) typex
+-> Int (foo) (foo) cat typex 
+-> Int (foo) (foo) swp (typex) dip typex
+-> Int (foo) (foo) (typex) dip typex
+-> Int (foo) (foo) (typex) swp quo cat i typex
+-> Int (foo) (typex) (foo) quo cat i typex
+-> Int (foo) (typex) ((foo)) cat i typex
+-> Int (foo) (typex (foo)) i typex
+-> Int (foo) typex (foo) typex
+-> Int (foo) typex
+-> Int;
+
