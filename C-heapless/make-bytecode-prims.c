@@ -6,7 +6,7 @@
 #include <stdlib.h> // for exit()
 
 typedef struct Def {
-  char *name;
+  char *name;       
   char *src;
 } Def;
 

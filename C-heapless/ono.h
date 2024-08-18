@@ -48,6 +48,8 @@ typedef enum Err {
   ERR_UNKNOWN
 } Err;
 
+#define ERR_WORD_BUFSIZE 9
+
 typedef struct Env {
   Word*   base;   // bottom
   Word*   limit;  // above last word
@@ -67,7 +69,7 @@ typedef struct Env {
 
   jmp_buf catch; 
   Err     err;
-  Opcode  errOpcode;
+  char    errWord[ERR_WORD_BUFSIZE]; // null terminated
 } Env;
 
 #define AVAILABLE_WORDS (env.lsp - env.sp - 1)

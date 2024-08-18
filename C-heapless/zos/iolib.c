@@ -25,9 +25,9 @@ void openCode(void) {
   Int flags = popInt();
   char *fName = (char *)itemBase(env.sp);
   Int nameLen = env.sp[-1];
-  fName[nameLen] = '\0'; // see [1]
-  Int fd = open(fName,flags);
   popCode();
+  fName[nameLen] = '\0';
+  Int fd = open(fName,flags);
   pushInt(fd);
 }
 

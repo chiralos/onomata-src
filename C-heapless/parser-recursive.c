@@ -6,9 +6,6 @@
 
 extern Env env;
 
-// HERE add depth args, fail properly on bad stop.
-//      let parseSeq have empty content
-
 Err parseItem(Seg* in, Seg* out, int n);
 Err parseSeq(Seg* in, Seg* out, int n);
 

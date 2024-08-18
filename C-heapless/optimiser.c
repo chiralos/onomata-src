@@ -29,7 +29,7 @@ static bool linkProc(Seg code) {
     Opcode op = decodeInstruction(code.cursor,&x,&len);
     if (op == OP_PUSH_CODE) {
       Seg sub;
-      sub.end = sub.cursor + len;
+      sub.end = code.cursor + len;
       sub.cursor = sub.end - x;
       if(!linkProc(sub)) return false;
     } else if (op == OP_CALL_STATIC) {
@@ -57,7 +57,7 @@ Err freezeAndLink(void) {
     totalAdditionalSize += (sz - originalSize);
   }
 
-  if (totalAdditionalSize >= AVAILABLE_BYTES)
+  if (totalAdditionalSize > 0 && totalAdditionalSize >= AVAILABLE_BYTES)
     return ERR_OUT_OF_MEMORY;
 
   // pass 2 : peephole opt and write call instructions with def number

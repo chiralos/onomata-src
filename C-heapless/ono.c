@@ -448,9 +448,9 @@ MATHOP(bitorCode,|)
 MATHOP(bitxorCode,^)
 
 void bitshiftCode(void) {
-  Int amount = popInt();
-  Int x      = popInt();
-  pushInt(amount < 0 ? x >> -amount : x << amount);
+  Int  a = popInt();
+  Word x = (Word)popInt();
+  pushInt((Int)(a < 0 ? x >> -a : x << a));
 }
 
 void bitnotCode(void) { pushInt(~popInt()); }
@@ -519,6 +519,7 @@ void packCode(void) {
 
 void unpackCode(void) { 
   *(--env.sp) = TAG_INT; // so elegant
+  popCode();
 }
 
 Word* indexStruct(Int m, Word* s) {
@@ -591,8 +592,9 @@ void strCode(void) {
       break;
     case TAG_BUF:
       {
+      Word* a = env.sp;
       popCode();
-      pushBytes((void *)env.sp[-1],env.sp[-2],TAG_BYTES);
+      pushBytes((void *)a[-1],a[-2],TAG_BYTES);
       }
       break;
     case TAG_BYTES:
@@ -884,9 +886,26 @@ static char* errorStrings[] = {
   "io error",
   "unknown error" };
 
-void printError(int e) {
-  char *s = errorStrings[e < ERR_UNKNOWN ? e : ERR_UNKNOWN];
+static void unknownSymbol(char* s, int len) {
+  int copylen = len >= ERR_WORD_BUFSIZE ?
+                ERR_WORD_BUFSIZE-4 : len;
+  memcpy(env.errWord,s,copylen);
+  if (copylen < len) {
+    memcpy(env.errWord+ERR_WORD_BUFSIZE-4,"...",3);
+    len = ERR_WORD_BUFSIZE-1;
+  }
+  env.errWord[len] = '\0';
+  THROW(ERR_UNKNOWN_SYMBOL);
+}
+
+void printError(void) {
+  char *s = errorStrings[env.err < ERR_UNKNOWN ? 
+                         env.err : ERR_UNKNOWN];
   ioWrite(stdoutFD,s,strlen(s));
+  if (env.err == ERR_UNKNOWN_SYMBOL) {
+    writeChar(' ',stdoutFD);
+    ioWrite(stdoutFD,env.errWord,strlen(env.errWord));
+  }
   writeNL(stdoutFD);
 }
 
@@ -913,7 +932,7 @@ Word *findDef(bool throwIfMissing) {
   lookup(&s,&buf);
   Word* def = s.dp;
   if (!def && throwIfMissing) 
-    THROW(ERR_UNKNOWN_SYMBOL);
+    unknownSymbol((char *)buf.data,buf.len);
   return def;
 }
 
@@ -1014,7 +1033,7 @@ void callnameCode(void) {
   lookup(&s,&buf);
   Word* dp = s.dp;
   if (!dp) 
-    THROW(ERR_UNKNOWN_SYMBOL);
+    unknownSymbol((char *)buf.data,buf.len);
   dp = next(dp);
   Code code = (Code)itemBase(dp);
   len = dp[-1];
@@ -1084,7 +1103,6 @@ void rclCode(void) {
 
 void typeCheck(Opcode op) {
   if (op >= FIRST_IMMEDIATE_OP) return;
-  env.errOpcode = op;
   char *typec = opInfoTable[op].type;
   Word* sp = env.sp;
   while (*typec) {
@@ -1127,7 +1145,6 @@ void typeCheck(Opcode op) {
     sp = next(sp);
     typec++;
   }
-  env.errOpcode = OP_NOP;
 }
 
 static void setPC(Code newPC, Code newPE) {
@@ -1174,7 +1191,7 @@ void interpretLoop(void) {
     } else if (op <= LAST_IMMEDIATE_OP) {
       immediateOpJumpTable[op-FIRST_IMMEDIATE_OP]();
     } else {
-      THROW(ERR_UNKNOWN_SYMBOL);
+      THROW(ERR_INTERNAL);
     }
     if (!env.pcAdjusted) // if not touched by eg branch prims
       advancePC();
@@ -1195,7 +1212,7 @@ void reset(Opcode op) {
 void undefCode(void) {
   Word* def   = findDef(true);
   popCode();
-  if (def <= env.ft) THROW(ERR_UNKNOWN_SYMBOL);
+  if (def <= env.ft) THROW(ERR_UNKNOWN_SYMBOL); // see [15]
   Word* b      = next(def);
   Word gapsize = stackItemSize(def) + stackItemSize(b);
   memmove((Code)itemBase(b),(Code)(def+1),(env.sp-def)*WORDSIZE);
@@ -1288,7 +1305,7 @@ void repl(void) {
     TRY {
       interpretLoop();
     } else {
-      printError(env.err); // see [1]
+      printError(); // see [1]
     }
   }
 }
@@ -1375,4 +1392,6 @@ and sizes for specific word sizes in the future).
    And particularly bad because almost all code doesn't cause.
    Can fix by recording "do I shuffle ?" flag (yes/no/unknown)
    in the dict entry, and keeping it updated on def and undef.
+
+   [15] Should be "can't undef frozen symbol" message.
 */
