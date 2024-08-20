@@ -4,6 +4,7 @@ extern void nopCode        (void);
 extern void popCode        (void);
 extern void dupCode        (void);
 extern void swpCode        (void);
+extern void upCode         (void);
 extern void quoCode        (void);
 extern void catCode        (void);
 extern void runCode        (void);
@@ -40,7 +41,15 @@ extern void strbrkCode     (void);
 extern void strgetCode     (void);
 extern void strsetCode     (void);
 extern void parseintCode   (void);
+
+extern void memsliceCode   (void);
+extern void memcpyCode     (void);
+extern void peekpokeintCode(void);
+
+extern void allocstaticCode(void);
+
 extern void sleepmilliCode (void);
+
 extern void stdinCode      (void);
 extern void stdoutCode     (void);
 extern void openCode       (void);
@@ -57,33 +66,36 @@ extern void rdwrCode       (void);
 extern void truncCode      (void);
 extern void creatCode      (void);
 extern void nonblockCode   (void);
-extern void memsliceCode   (void);
-extern void memcpyCode     (void);
-extern void peekpokeintCode(void);
-extern void savefdCode     (void);
-extern void errstrCode     (void);
+
 extern void availCode      (void);
 extern void wordsizeCode   (void);
+
+extern void savefdCode     (void);
+extern void errstrCode     (void);
 extern void parseCode      (void);
 extern void writestackCode (void);
+extern void isdefCode      (void);
 extern void undefCode      (void);
 extern void listCode       (void);
 extern void showCode       (void);
 extern void clearCode      (void);
 extern void resetCode      (void);
+
 extern void defCode        (void);
-extern void allocstaticCode(void);
 extern void freezeCode     (void);
 extern void exitCode       (void);
+
 extern void bytecodeCode   (void);
+
+extern void stoCode        (void);
+extern void rclCode        (void);
+
 extern void pushintCode    (void);
 extern void pushbytesCode  (void);
 extern void pushbufCode    (void);
 extern void callnameCode   (void);
 extern void staticcallCode (void);
 extern void branchCode     (void);
-extern void stoCode        (void);
-extern void rclCode        (void);
 
 // THIS MUST BE KEPT IN Opcode ORDER
 
@@ -97,6 +109,7 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   swpCode,        // OP_SWA
   swpCode,        // OP_DIG
   swpCode,        // OP_BRY
+  upCode,         // OP_UP
 
   quoCode,        // OP_QUO
   catCode,        // OP_CAT
@@ -146,6 +159,8 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
 
   memsliceCode,   // OP_MEMRAW
   memcpyCode,     // OP_MEMCPY
+  peekpokeintCode,// OP_PEEK
+  peekpokeintCode,// OP_POKE
   peekpokeintCode,// OP_PEEKINT
   peekpokeintCode,// OP_POKEINT
 
@@ -170,12 +185,14 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   creatCode,      // OP_CREAT
   nonblockCode,   // OP_NONBLOCK
 
-  savefdCode,     // OP_SAVEFD
-  errstrCode,     // OP_ERRSTR
   availCode,      // OP_AVAIL
   wordsizeCode,   // OP_WORDSIZE
+
+  savefdCode,     // OP_SAVEFD
+  errstrCode,     // OP_ERRSTR
   parseCode,      // OP_PARSE
   writestackCode, // OP_WRITESTACK
+  isdefCode,      // OP_ISDEF
   undefCode,      // OP_UNDEF
   listCode,       // OP_LIST
   showCode,       // OP_SHOW
@@ -192,6 +209,7 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   bytecodeCode,   // OP_DIP
   bytecodeCode,   // OP_LOOP
   bytecodeCode,   // OP_WRITELINE
+  bytecodeCode,   // OP_LOADONCE
   bytecodeCode,   // OP_LOAD
   bytecodeCode,   // OP_LOADFD
   bytecodeCode,   // OP_LOADSTR

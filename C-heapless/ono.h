@@ -44,11 +44,12 @@ typedef enum Err {
   ERR_ARRAY_BOUNDS,
   ERR_UNKNOWN_SYMBOL,
   ERR_IO_ERROR,
+  ERR_ALREADY_DEFINED,
 
   ERR_UNKNOWN
 } Err;
 
-#define ERR_WORD_BUFSIZE 9
+#define ERR_WORD_BUFSIZE 12
 
 typedef struct Env {
   Word*   base;   // bottom

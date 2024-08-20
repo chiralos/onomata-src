@@ -14,6 +14,7 @@ typedef enum Opcode {
   OP_SWA,
   OP_DIG,
   OP_BRY,
+  OP_UP,
 
   OP_QUO,
   OP_CAT,
@@ -63,6 +64,8 @@ typedef enum Opcode {
 
   OP_MEMSLICE,
   OP_MEMCPY,
+  OP_PEEK,
+  OP_POKE,
   OP_PEEKINT,
   OP_POKEINT,
 
@@ -87,17 +90,20 @@ typedef enum Opcode {
   OP_CREAT,
   OP_NONBLOCK,
 
-  OP_SAVEFD,
-  OP_ERRSTR,
   OP_AVAIL,
   OP_WORDSIZE,
+
+  OP_SAVEFD,
+  OP_ERRSTR,
   OP_PARSE,
   OP_WRITESTACK,
+  OP_ISDEF,
   OP_UNDEF,
   OP_LIST,
   OP_SHOW,
   OP_CLEAR,
   OP_RESET,
+
   OP_DEF,
   OP_FREEZE,
   OP_EXIT,
@@ -105,6 +111,7 @@ typedef enum Opcode {
   OP_DIP,
   OP_LOOP,
   OP_WRITELINE,
+  OP_LOADONCE,
   OP_LOAD,
   OP_LOADFD,
   OP_LOADSTR,

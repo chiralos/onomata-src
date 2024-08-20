@@ -23,6 +23,7 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "swa",          "aaa" }, // OP_SWA
   { "dig",          "aaa" }, // OP_DIG
   { "bry",          "aaa" }, // OP_BRY
+  { "up",           "na"  }, // OP_UP not statically typed
 
   { "quo",          "a"   }, // OP_QUO
   { "cat",          "rr"  }, // OP_CAT
@@ -58,7 +59,7 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
 
   { "len",          "l"   }, // OP_LEN
 
-  { "pack",         "n"   }, // OP_PACK not well typed, takes additional a
+  { "pack",         "n"   }, // OP_PACK not statically typed
   { "unpack",       "t"   }, // OP_UNPACK
   { "tup-get",      "nt"  }, // OP_TUPGET
   { "tup-set",      "nat" }, // OP_TUPSET
@@ -72,6 +73,8 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
 
   { "mem-slice",    "nnp" }, // OP_MEMSLICE
   { "mem-cpy",      "mp"  }, // OP_MEMCPY
+  { "peek",         "np"  }, // OP_PEEK
+  { "poke",         "nnp" }, // OP_POKE
   { "peek-int",     "np"  }, // OP_PEEKINT
   { "poke-int",     "nnp" }, // OP_POKEINT
 
@@ -96,17 +99,20 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "creat",        ""    }, // OP_CREAT
   { "nonblocking",  ""    }, // OP_NONBLOCKING
 
-  { "save-fd",      "n"   }, // OP_SAVEFD
-  { "errstr",       "n"   }, // OP_ERRSTR
   { "avail",        ""    }, // OP_AVAIL
   { "wordsize",     ""    }, // OP_WORDSIZE
+
+  { "save-fd",      "n"   }, // OP_SAVEFD
+  { "errstr",       "n"   }, // OP_ERRSTR
   { "parse",        "snr" }, // OP_PARSE
   { "write-stack",  ""    }, // OP_WRITESTACK
+  { "is-defined",   "s"   }, // OP_ISDEF
   { "undef",        "s"   }, // OP_UNDEF
   { "list",         ""    }, // OP_LIST
   { "show",         "s"   }, // OP_SHOW
   { "clear",        ""    }, // OP_CLEAR
   { "reset",        ""    }, // OP_RESET
+
 #ifdef AUTOQUOTE
   { "def",          "as"  }, // OP_DEF
 #else
@@ -118,6 +124,7 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "dip",          "ra"  }, // OP_DIP
   { "loop",         "r"   }, // OP_LOOP
   { "write-line",   "s"   }, // OP_WRITELINE
+  { "load-once",    "s"   }, // OP_LOADONCE
   { "load",         "s"   }, // OP_LOAD
   { "load-fd",      "t"   }, // OP_LOADFD
   { "load-str",     "s"   }, // OP_LOADSTR

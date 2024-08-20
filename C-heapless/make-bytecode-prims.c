@@ -17,6 +17,9 @@ Def defs[] = {
   { "loopBytecode", "dup dip swp (loop) (pop) ife" },
   { "writeLineBytecode", 
     "\"\\n\" str-cat stdout swp write-str pop" },
+  { "loadonceBytecode",
+    "dup \"-loaded\" str-cat dup is-defined"
+    "(pop pop) ((true) def load) ife" },
   { "loadBytecode", // load
       "read-only open dup 0 lt"
       "(pop \"open error\" write-line)"

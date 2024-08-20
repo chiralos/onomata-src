@@ -6,9 +6,9 @@ Env env;
 Word mem[DEFAULT_MEM_SIZE_WORDS];
 
 int main(int argc, char** argv) {
-  env.base        = mem;
-  env.limit       = env.base + DEFAULT_MEM_SIZE_WORDS;
-  env.dt          = (env.ft = (env.sp = env.base));
+  env.base  = mem;
+  env.limit = env.base + DEFAULT_MEM_SIZE_WORDS;
+  env.dt    = (env.ft = (env.sp = env.base));
   repl();
 }
 

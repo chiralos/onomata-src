@@ -362,6 +362,20 @@ void swpImpl(int mode) {
 
 void swpCode(void) { swpImpl(*env.pc - OP_SWP); }
 
+void upCode(void) {
+  Int n = popInt();
+  Word* p = env.sp;
+  while (n > 0) {
+    p = next(p);
+    if (p <= env.dt) THROW(ERR_STACK_UNDERFLOW);
+    n--;
+  }
+  Word sz = stackItemSize(p);
+  overflowCheck(sz);
+  memcpy(env.sp+1,itemBase(p),sz*WORDSIZE);
+  env.sp += sz;
+}
+
 void catCode(void) {
   Tag t            = env.sp[0];
   Word* b          = stack2();
@@ -853,19 +867,29 @@ void memcpyCode(void) {
 }
 
 void peekpokeintCode(void) {
-  bool isPoke = *env.pc == OP_POKEINT;
+  Byte op = *env.pc;
+  bool isPoke = op == OP_POKEINT || op == OP_POKE;
+  bool isInt  = op == OP_POKEINT || op == OP_PEEKINT;
   int x = 0;
   int offset = popInt();
   if (isPoke) x = popInt();
   void* buf = (void *)env.sp[-1];
-  if (offset < 0 || (offset+1)*WORDSIZE > env.sp[-2])
+  if (offset < 0 || (offset+1)*(isInt ? WORDSIZE : 1) > env.sp[-2])
     THROW(ERR_ARRAY_BOUNDS);
   popCode();
-  Int* ip = ((Int*)buf) + offset;
-  if (isPoke)
-    *ip = x;
-  else
-    pushInt(*ip);
+  if (isInt) {
+    Int* ip = ((Int*)buf) + offset;
+    if (isPoke)
+      *ip = x;
+    else
+      pushInt(*ip);
+  } else {
+    Byte *bp = ((Byte*)buf) + offset;
+    if (isPoke)
+      *bp = (Byte)x;
+    else
+      pushInt((Int)*bp);
+  }
 }
 
 // NOTE must be in same order as Err enum in ono.h
@@ -884,9 +908,10 @@ static char* errorStrings[] = {
   "array bounds error",
   "unknown symbol",
   "io error",
+  "already defined",
   "unknown error" };
 
-static void unknownSymbol(char* s, int len) {
+static void unknownSymbol(char* s, int len, Err err) {
   int copylen = len >= ERR_WORD_BUFSIZE ?
                 ERR_WORD_BUFSIZE-4 : len;
   memcpy(env.errWord,s,copylen);
@@ -895,14 +920,15 @@ static void unknownSymbol(char* s, int len) {
     len = ERR_WORD_BUFSIZE-1;
   }
   env.errWord[len] = '\0';
-  THROW(ERR_UNKNOWN_SYMBOL);
+  THROW(err);
 }
 
 void printError(void) {
   char *s = errorStrings[env.err < ERR_UNKNOWN ? 
                          env.err : ERR_UNKNOWN];
   ioWrite(stdoutFD,s,strlen(s));
-  if (env.err == ERR_UNKNOWN_SYMBOL) {
+  if (env.err == ERR_UNKNOWN_SYMBOL || 
+      env.err == ERR_ALREADY_DEFINED) {
     writeChar(' ',stdoutFD);
     ioWrite(stdoutFD,env.errWord,strlen(env.errWord));
   }
@@ -932,13 +958,18 @@ Word *findDef(bool throwIfMissing) {
   lookup(&s,&buf);
   Word* def = s.dp;
   if (!def && throwIfMissing) 
-    unknownSymbol((char *)buf.data,buf.len);
+    unknownSymbol((char *)buf.data,buf.len,ERR_UNKNOWN_SYMBOL);
   return def;
 }
 
 void defCode(void) {
   swpImpl(SWAP_MODE_SWP); // put name on top for dictionary format
-  if (findDef(false)) THROW(ERR_BAD_ARGUMENT);
+  if (findDef(false)) {
+    Buf buf;
+    buf.len   = env.sp[-1], 
+    buf.data  = (Byte *)itemBase(env.sp);
+    unknownSymbol((char *)buf.data,buf.len,ERR_ALREADY_DEFINED);
+  }
   Word* b = stack2(); // b is thing
 #ifdef AUTOQUOTE
   if (b[0] != TAG_CODE) {
@@ -1033,7 +1064,7 @@ void callnameCode(void) {
   lookup(&s,&buf);
   Word* dp = s.dp;
   if (!dp) 
-    unknownSymbol((char *)buf.data,buf.len);
+    unknownSymbol((char *)buf.data,buf.len,ERR_UNKNOWN_SYMBOL);
   dp = next(dp);
   Code code = (Code)itemBase(dp);
   len = dp[-1];
@@ -1220,6 +1251,12 @@ void undefCode(void) {
   env.sp -= gapsize;
 }
 
+void isdefCode(void) {
+  Word* def = findDef(false);
+  popCode();
+  *(++env.sp) = (def == NULL) ? TAG_FALSE : TAG_TRUE;
+}
+
 void writeDefBody(Word *dp, int fd) {
   Int len = dp[-1];
   if (dp[0] == TAG_BYTES) {
@@ -1232,20 +1269,30 @@ void writeDefBody(Word *dp, int fd) {
   }
 }
 
+#define MAX_LINE_LENGTH 40
+
 void listCode(void) {
+  int n = 0;
   Word* dp = env.dt;
   while (dp > env.base) {
+    if (n > MAX_LINE_LENGTH) {
+      writeNL(stdoutFD);
+      n = 0;
+    }
     if (dp == env.ft) {
+      if (n > 0) writeNL(stdoutFD);
       ioWrite(stdoutFD,"-- frozen --",12);
       writeNL(stdoutFD);
+      n = 0;
     }
     Word sz = dp[-1];
     if (sz > 0) {
       ioWrite(stdoutFD,(char *)itemBase(dp),sz);
-      writeNL(stdoutFD);
+      writeChar(' ',stdoutFD);
     }
     dp = next(dp);
     dp = next(dp);
+    n += sz + 1;
   }
 }
 
@@ -1388,8 +1435,8 @@ and sizes for specific word sizes in the future).
         around (static-alloc, undef, freeze) could be ran from
    dictionary. Fixed by always copying dict code to lexical
    stack, which is bad because of the speed and memory waste.
-
    And particularly bad because almost all code doesn't cause.
+
    Can fix by recording "do I shuffle ?" flag (yes/no/unknown)
    in the dict entry, and keeping it updated on def and undef.
 
