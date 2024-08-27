@@ -49,6 +49,8 @@ typedef enum Opcode {
   OP_GTE,
 
   OP_LEN,
+  OP_SLC,
+  OP_BRK,
 
   OP_PACK,
   OP_UNPACK,
@@ -57,13 +59,11 @@ typedef enum Opcode {
 
   OP_STR,
   OP_STRCAT,
-  OP_STRBRK,
   OP_STRGET,
   OP_STRSET,
   OP_PARSEINT,
 
-  OP_MEMSLICE,
-  OP_MEMCPY,
+  OP_OVERWRITE,
   OP_PEEK,
   OP_POKE,
   OP_PEEKINT,

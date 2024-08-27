@@ -1,72 +1,117 @@
 # A heapless Onomata interpreter in C
 
-The overall goal of this Onomata host was to make something like
-the BASIC environments provided by 8-bit computers of the 1970s and
-80s. But with first-class functions. So ideally:
+August 2024
 
-  * compact. The Jupiter Ace had a Forth system, floating-point 
-    library, and all hardware support including tape IO in an 8K ROM.
+## Targets
 
-  * have a read-eval-print loop that allows definitions to be 
-    added, removed, listed, inspected, saved, and loaded
-
-  * show stack contents
-
-  * uncrashable under ordinary usage
-
-## Supported onomata
-
-### Types
-
-`Int` `Bool` `Str` `Tup` `Proc` `Buf`
-
-`Int` is platform default C 'int' type.
-
-Traits supported are `Ord` and `Eq` ( for `Int Bool Str`),
-`Len` (for `Str Tup`), `ByteSrc` (for `Str Buf`).
-
-### Names
-
-| Group     | Names                                           |
-|:----------|:------------------------------------------------|
-| universal | nop pop dup                                     |
-| stack     | swp swu swa dig bury                            |
-| boolean   | true false and or not                           |
-| control   | quo cat run dip loop ife                        |
-| int math  | add sub mul div mod                             |
-| ordering  | cmp eq lt lte gt gte neq                        |
-| bitwise   | bit-and bit-or bit-not bit-xor bit-shift        |
-| length    | len                                             |
-| string    | str str-cat str-brk str-get str-set parse-int   |
-| tuples    | pack unpack tup-get tup-set                     |
-| buffers   | mem-slice mem-cpy peek-int poke-int             |
-| memory    | alloc-static                                    |
-| system    | exit sleep-milli wordsize avail                 |
-| IO        | stdin stdout open close seek read-str write-str |
-|           | seek-set seek-cur seek-end read-only write-only |
-|           | read-write trunc creat nonblocking              |
-| def       | def def-mem                                     |
-| dynamic   | clear reset list show undef freeze load load-fd |
-|           | save save-fd                                    |
-| misc      | errstr parse write-stack write-line repl        |
-
-## Generic Unix target
-
-Should just need make and a C compiler.
-
-    cd unix
-    make ono-unix
-
-## Zeal OS target
+### Zeal 8-Bit OS target
 
 Cross-compiled from Unix. Has been known to build from MacOS
 and WSL Ubuntu.
 
-Requires SDCC (Small Device C Compiler), and Zeal-8-Bit-OS repo for
+Requires SDCC (Small Device C Compiler), and Zeal 8-Bit-OS repo for
 headers.
 
-Look at `zos/Makefile`. Need to set up `ZOS_PATH` and `SDCC_BASE`.
+Look at `C-heapless/zos/Makefile`. Need to set up `ZOS_PATH` and `SDCC_BASE`.
 
-Generates `ono-zos.bin` which is a standard ZOS binary. Has been
+    cd C-heapless/zos
+    make onoi
+
+Generates `onoi` which is a standard ZOS binary. Has been
 tested on the Zeal 8-bit emulator and (occasionally) hardware.
 
+### Generic Unix target
+
+Should just need make and a C compiler.
+
+    cd C-heapless/unix
+    make onoi
+
+## Host details
+
+The system is dynamically typed, checks array bounds and memory
+overflow, and is properly tail-recursive. The heap size is set in
+the main.c of each target.
+
+See [here](../README.md#language) for list of words and types it supports.
+
+## Motivatiion
+
+The overall goal of this host (interpreter) was to make something like
+the BASIC environments provided by 8-bit computers of the 1970s and
+80s. But with first-class functions. So ideally:
+
+  * Compact.  The Zeal 8-Bit OS Z80 binary (compiled with SDCC) weighs 
+    in at about 22KB which I consider a failure. 
+    
+    The [Jupiter Ace](https://en.wikipedia.org/wiki/Jupiter_Ace) had a 
+    Forth system, floating-point library, and all hardware support 
+    including tape IO in an 8K ROM.
+
+    I'm sure a hand-written Z80 assembly translation could get it down 
+    under 12K. But if I was going to spend the time on a good Z80 host 
+    I would start from something better than this.
+
+  * Have a read-eval-print loop that allows definitions to be 
+    added, removed, listed, inspected, saved, and loaded.
+
+  * Show stack contents.
+
+  * At least some error messages: syntax errors, type mismatches, 
+    bounds violations, undefined symbols, out-of-memory.
+
+  * Uncrashable under ordinary usage. Not achived: there is
+    C-stack recursion in the printing and optimising code that is
+    unchecked, so you can probably crash it with deep enough 
+    procedure nesting.
+
+## Architecture
+
+How can you implement first-class functions and dynamic strings
+without a heap ? Memcpy. Lots of memcpy.
+
+The system works in a single block of RAM, with an upward growing
+dictionary and argument stack, and a downward growing return stack,
+which is separate from the C stack.
+
+At the base are static memory allocations and "frozen" optimised
+bytecode dictionary definitions. These are fixed and once allocated
+cannot be freed without resetting the system. Above that are
+relocatable bytecode definitions which can be undefined. Above that
+is the argument stack.
+
+A lexical (return) stack grows down from the top of the the block.
+This holds return addresses and copies of code that is being executed.
+
+When executing code objects from the stack the copy is unavoidable
+(it's got to exist somewhere). But a major flaw in the implementation
+is that _all_ calls to unfrozen code make a copy to the lexical
+stack.  You _should_ be able to just point to the definition bodies
+in the dictionary; but the `static-alloc`, `undef`, and `freeze`
+words shuffle definitions around, so you can't be running from there
+when that happens. Which is particulary bad because nearly all code
+never causes shuffling.
+
+You could get around that by tracking which code can never cause a
+shuffle and avoiding the copy. Or by restricting shuffling operations
+to special top-level directives. But I'd rather move on to a host
+with a proper heap and compare the performance and memory usage of
+this to that.
+
+### Optimisation
+
+The `freeze` word takes all the currently unfrozen definitions, compiles
+them a bit, and freezes them iin place. Frozen code seems to run about three
+times faster.
+
+It does a tiny bit of peephole optimisation, converting `ife` and
+`loop` to branch instructions so that it doesn't have to push the
+code it's about to run onto the stack. The `dip` word is converted
+a sequence that more straighforwardly moves the item to be hidden
+to the lexical stack, runs the stack top, and moves the item back
+to the stack top.
+
+It also links all the word calls so they point directly to their
+entry points rather than them up by name (which is a linear look-up
+because I haven't been bothered to add a couple of words to each
+dictionary entry to turn it into a binary tree).

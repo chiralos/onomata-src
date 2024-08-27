@@ -3,7 +3,7 @@
 
 CFLAGS = -ggdb -DWORDTYPE=${WORDTYPE} -DINTTYPE=${INTTYPE}
 OBJS = parser.o parser-recursive.o escapechars.o info-table.o \
-stack.o optimiser.o bytecode.o
+env.o optimiser.o bytecode.o
 
 make-bytecode-prims : make-bytecode-prims.o ${OBJS}
 	cc -o ${TARGETDIR}/make-bytecode-prims make-bytecode-prims.o ${OBJS}

@@ -1,0 +1,31 @@
+
+
+"cond" (false) def
+
+"case" ( 
+  dig
+  (pop pop true) 
+  (swp dip swp (run true) (pop false) ife) 
+  ife
+) def
+
+"end-cond" (pop) def
+
+# example
+# -1
+# cond
+# (dup 0 lt) (pop "negative") case
+# (dup 0 gt) (pop "positive") case
+# (true)     (pop "zero")     case
+# end-cond
+
+"repeat" (
+  ( dup 0 lte
+    (pop pop false)
+    (1 sub (dup dip) dip true)
+    ife
+  ) loop
+) def
+
+"ord" (0 str/get) def
+"chr"  ("\0" swp 0 str/set) def

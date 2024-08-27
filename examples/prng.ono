@@ -1,0 +1,27 @@
+"vars.ono" load-once
+
+# from Wikipedia on Xorshift, in particular xorshiftr+
+
+"rng-state" 2 def-int-array
+
+"seed" ( # (s0 s1 -> )
+  1 set-rng-state 0 set-rng-state
+) def
+
+false
+wordsize 8 eq (pop 23 -17 true) () ife # exactly xorshiftr128+
+wordsize 4 eq (pop 11 -7  true) () ife # guesses for smaller one
+wordsize 2 eq (pop 7  -5  true) () ife
+not ("unsupported word size" write-line exit) () ife
+"rshift" swp quo def
+"lshift" swp quo def
+
+"rng" ( # (-> int)
+  0 rng-state                       # x
+  (1 rng-state 0 set-rng-state) dip # x ; s[0] <- y
+  dup lshift bit/shift bit/xor      # x <- x `xor` (x << lshift)
+  dup rshift bit/shift bit/xor      # x <- x `xor` (x >> rshift)
+  1 rng-state bit/xor               # x <- x `xor` y
+  dup                               # x x 
+  1 rng-state add 1 set-rng-state   # x ; s[1] <- x + y
+) def

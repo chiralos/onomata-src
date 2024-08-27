@@ -1,0 +1,36 @@
+"peek-int"
+(wordsize mul wordsize mem-slice str from-little-endian)
+def
+
+"from-little-endian"
+(0 swp (split-and-add) wordsize repeat pop)
+def
+
+"split-and-add"
+(dup str-len 1 sub str-brk 0 str-get dig 8 bit-shift add swp)
+def
+
+"repeat"
+(1 sub dup 0 gte ((dup dip) dip repeat) (pop pop) ife)
+def
+
+"make-byte"
+(" " swp 0 str-set)
+def
+
+"mask-and-shift"
+(dup 255 bit-and swp -8 bit-shift swp)
+def
+
+"cat-byte"
+(mask-and-shift make-byte swu str-cat swp)
+def
+
+"to-little-endian"
+("" swp (cat-byte) wordsize repeat pop)
+def
+
+"poke-int"
+(swp to-little-endian bry wordsize mul wordsize mem-slice swp mem-cpy)
+def
+

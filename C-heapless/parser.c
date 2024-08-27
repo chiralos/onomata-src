@@ -22,7 +22,7 @@ if (out->cursor + N >= out->end) return ERR_OUT_OF_MEMORY
 void emitByte(Seg* out, Byte x) { *(out->cursor++) = x; }
 
 bool isWordChar(Byte c) {
-  return isalpha(c) || c == '-' || c == '_' || isdigit(c);
+  return isalpha(c) || c == '-' || c == '/' || isdigit(c);
 }
 
 Err parseSpaces(Seg* in, Seg* out) {

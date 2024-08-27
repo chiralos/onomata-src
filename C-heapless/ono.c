@@ -1,5 +1,5 @@
 #include "ono.h"
-#include "stack.h"
+#include "env.h"
 #include "parser.h"
 #include "bytecode.h"
 #include "escapechars.h"
@@ -187,9 +187,9 @@ static void writeStackItem(Word *sp, int fd) {
       break;
     case TAG_BUF:
       writeChar('$',fd);
-      writeInt(sp[-1],false,fd);
-      writeChar(':',fd);
       writeInt(sp[-2],false,fd);
+      writeChar(':',fd);
+      writeInt(sp[-1],false,fd);
       break;
   }
 }
@@ -223,8 +223,8 @@ void pushBytes(void* buf, int len, Tag tag) {
 
 void pushBuf(void* p, Word len) {
   overflowCheck(3);
-  *(++env.sp) = len;
   *(++env.sp) = (Word)p;
+  *(++env.sp) = len;
   *(++env.sp) = TAG_BUF;
 }
 
@@ -552,8 +552,8 @@ void tupgetCode(void) {
   Int m    = popInt();
   Word* p  = indexStruct(m,env.sp);
   Word pSz = stackItemSize(p);
-  overflowCheck(pSz);
-  memcpy(env.sp+1,itemBase(p),pSz*WORDSIZE);
+  popCode();
+  memmove(env.sp+1,itemBase(p),pSz*WORDSIZE);
   env.sp += pSz;
 }
 
@@ -608,7 +608,7 @@ void strCode(void) {
       {
       Word* a = env.sp;
       popCode();
-      pushBytes((void *)a[-1],a[-2],TAG_BYTES);
+      pushBytes((void *)a[-2],a[-1],TAG_BYTES);
       }
       break;
     case TAG_BYTES:
@@ -622,9 +622,9 @@ void lenCode(void) {
   int n = 0;
   switch(env.sp[0]) {
     case TAG_BYTES:
+    case TAG_BUF:
       n = env.sp[-1];
       break;
-    case TAG_BUF:
     case TAG_STRUCT:
       n = env.sp[-2];
       break;
@@ -633,22 +633,50 @@ void lenCode(void) {
   pushInt(n);
 }
 
-void strbrkCode(void) {
+void slcCode(void) {
+  Int len = popInt();
+  Int offset = popInt();
+  Tag tg = (Tag)env.sp[0];
+  Word bufLen = env.sp[-1];
+  if (offset < 0) THROW(ERR_BAD_ARGUMENT);
+  if (len == -1)
+    len = bufLen - offset;
+  if (offset + len > bufLen) THROW(ERR_ARRAY_BOUNDS);
+  if (tg == TAG_BUF) {
+    env.sp[-1] = len;
+    env.sp[-2] += offset;
+  } else  {
+    Byte* base = (Byte*)itemBase(env.sp);
+    memmove(base,base + offset,len);
+    popCode();
+    env.sp += alignedSize(len);
+    *(++env.sp) = len;
+    *(++env.sp) = TAG_BYTES;
+  }
+}
+
+void brkCode(void) {
   overflowCheck(1);
   Int m = popInt();
   Int n = env.sp[-1];
   if (m < 0 || m > n)
     THROW(ERR_ARRAY_BOUNDS);
   Int o = n - m;
-  Word mSz = alignedSize(m);
-  popCode();
-  memmove(env.sp+mSz+3,((Byte*)(env.sp+1))+m,o);
-  env.sp += mSz;
-  *(++env.sp) = m;
-  *(++env.sp) = TAG_BYTES;
-  env.sp += alignedSize(o);
-  *(++env.sp) = o;
-  *(++env.sp) = TAG_BYTES;
+  Tag tg = (Tag)env.sp[0];
+  if (tg == TAG_BUF) {
+    env.sp[-1] = m;
+    pushBuf((void *)(env.sp[-2]+m),o);
+  } else {
+    popCode();
+    Word mSz = alignedSize(m);
+    memmove(env.sp+mSz+3,((Byte*)(env.sp+1))+m,o);
+    env.sp += mSz;
+    *(++env.sp) = m;
+    *(++env.sp) = TAG_BYTES;
+    env.sp += alignedSize(o);
+    *(++env.sp) = o;
+    *(++env.sp) = TAG_BYTES;
+  }
 }
 
 void strgetCode(void) {
@@ -673,8 +701,8 @@ void strsetCode(void) {
 
 void parseintCode(void) {
   Word strSz = env.sp[-1];
+  Byte* buf = (Byte *)itemBase(env.sp);
   popCode();
-  Byte* buf = (Byte *)(env.sp + 1);
   Seg in = {.cursor = buf, .end = buf + strSz };
   while (in.cursor < in.end && isspace(*in.cursor)) in.cursor++;
   Err err = ERR_OK;
@@ -686,8 +714,14 @@ void parseintCode(void) {
   } else {
     err = consumeInt(&in,&x);
   }
-  pushInt(x);
-  pushInt((Int)err);
+  if (err == ERR_OK) {
+    Word n = in.cursor - buf;
+    pushInt(x);
+    pushInt(in.cursor - buf);
+  } else {
+    pushInt(0);
+    pushInt(0);
+  }
 }
 
 void stdinCode(void) { pushInt(stdinFD); }
@@ -827,7 +861,7 @@ void parseCode(void) {
   pushInt(n);
   swpImpl(SWAP_MODE_SWP);         // n below buf above procs
   pushInt(src.cursor - srcStart); // prune consumed chars from buf
-  strbrkCode();
+  brkCode();
   swpImpl(SWAP_MODE_SWP);
   popCode();
 
@@ -835,46 +869,32 @@ void parseCode(void) {
   pushInt(err);
 }
 
-void memsliceCode(void) {
-  Int len = popInt();
-  Int offset = popInt();
-  if (offset < 0) THROW(ERR_BAD_ARGUMENT);
-  Word bufLen = env.sp[-2];
-  if (len == -1)
-    len = bufLen - offset;
-  if (offset + len > bufLen) THROW(ERR_ARRAY_BOUNDS);
-  env.sp[-1] += offset;
-  env.sp[-2] = len;
-}
-
-void memcpyCode(void) {
+void overwriteCode(void) {
   void* src;
-  Word srcLen;
+  Word srcLen = env.sp[-1];
   Word* a = stack2();
   if (env.sp[0] == TAG_BYTES) {
     src = (void *)(a + 1);
-    srcLen = env.sp[-1];
   } else {
-    src = (void *)env.sp[-1];
-    srcLen = env.sp[-2];
+    src = (void *)env.sp[-2];
   }
   env.sp = a;
-  Word dstLen = env.sp[-2];
+  Word dstLen = env.sp[-1];
   if (srcLen > dstLen)
     THROW(ERR_ARRAY_BOUNDS);
-  memmove((void *)(env.sp[-1]),src,srcLen);
+  memmove((void *)(env.sp[-2]),src,srcLen);
   popCode();
 }
 
-void peekpokeintCode(void) {
+void peekpokeCode(void) {
   Byte op = *env.pc;
   bool isPoke = op == OP_POKEINT || op == OP_POKE;
   bool isInt  = op == OP_POKEINT || op == OP_PEEKINT;
   int x = 0;
   int offset = popInt();
   if (isPoke) x = popInt();
-  void* buf = (void *)env.sp[-1];
-  if (offset < 0 || (offset+1)*(isInt ? WORDSIZE : 1) > env.sp[-2])
+  void* buf = (void *)env.sp[-2];
+  if (offset < 0 || (offset+1)*(isInt ? WORDSIZE : 1) > env.sp[-1])
     THROW(ERR_ARRAY_BOUNDS);
   popCode();
   if (isInt) {
@@ -910,18 +930,6 @@ static char* errorStrings[] = {
   "io error",
   "already defined",
   "unknown error" };
-
-static void unknownSymbol(char* s, int len, Err err) {
-  int copylen = len >= ERR_WORD_BUFSIZE ?
-                ERR_WORD_BUFSIZE-4 : len;
-  memcpy(env.errWord,s,copylen);
-  if (copylen < len) {
-    memcpy(env.errWord+ERR_WORD_BUFSIZE-4,"...",3);
-    len = ERR_WORD_BUFSIZE-1;
-  }
-  env.errWord[len] = '\0';
-  THROW(err);
-}
 
 void printError(void) {
   char *s = errorStrings[env.err < ERR_UNKNOWN ? 

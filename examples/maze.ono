@@ -1,0 +1,179 @@
+"vars.ono" load-once
+"prng.ono" load-once
+"lib.ono"  load-once
+
+## state setup ##
+
+"max-m" (40) def
+"max-n" (20) def
+"m" def-int-var   # width  (x)
+"n" def-int-var   # height (y)
+
+"a" max-m max-n mul def-mem
+
+## cell array ##
+
+"dup-2" (1 up 1 up) def
+"xy2i" (m mul add) def
+"i2xy" (dup m mod swp m div) def
+
+"get-cell" ( # (x y -> c)
+  cond
+  (dup 0 lt)   (space) case
+  (dup n gte)  (space) case
+  (1 up 0 lt)  (space) case
+  (1 up m gte) (space) case
+  (true)       (dup-2 xy2i a swp peek) case
+  end-cond
+  bry pop pop
+) def
+
+"set-cell" ( # (c x y ->)
+  xy2i a bry poke
+) def
+
+# cell encoding:
+#   0-3 are rosette directions to spine ('grey')
+#   4 is the root position ('grey')
+#   5 is wall 
+#   6 is space
+"root"  (4)  def # .
+"wall"  (5)  def # #
+"space" (6)  def # space
+
+"cell2ascii" ( # cell-num -> string
+  "^>v<o#." swp 1 slc
+) def 
+
+## ASCII readout ##
+
+"readout-line" ( # (n ->)
+  m mul # starting position
+  ( dup i2xy get-cell cell2ascii stdout swp write-str pop
+    1 add
+  ) m repeat
+  pop
+  stdout "\n" write-str pop
+) def
+
+"readout" (
+  0 (dup readout-line 1 add) n repeat pop
+) def
+
+## entry point ##
+
+"maze" ( # (width height ->)
+  set-n set-m
+  cond
+  (m 3 lt)     ("width"  "small" true) case
+  (m max-m gt) ("width"  "large" true) case
+  (n 3 lt)     ("height" "small" true) case
+  (n max-n gt) ("height" "large" true) case
+  (true)       ("" "" false)           case
+  end-cond
+  ( " too " swp str/cat str/cat "\n" str/cat 
+    stdout swp write-str pop)
+  ( pop pop maze-init) ife
+) def
+
+"maze-init" (
+  # initialise cells
+  0 (dup a wall dig poke 1 add) m n mul repeat pop
+
+  # set spine start
+
+  # centre start - would need to add an entrance
+  # m 2 div n 2 div dup-2
+  1 0 dup-2
+  root bry set-cell
+
+  maze-step
+  make-exit
+  readout
+) def
+
+## maze algorithm ##
+
+"maze-step" ( # x y -> ), inv: pointing at grey cell
+  0 set-n-nb-walls
+  dup-2 0 probe-nb
+  dup-2 1 probe-nb
+  dup-2 2 probe-nb
+  dup-2 3 probe-nb
+  n-nb-walls 0 eq
+  ( dup-2 get-cell dup root eq
+    (pop space bry set-cell)       # done
+    ( bry dup-2 space bry set-cell # set current to space
+      dig add-dir                  # backtrack
+      maze-step                    # continue
+    ) ife
+  )
+  ( rng n-nb-walls mod nb-walls    # pick new direction
+    dup (bry) dip                  # d x y d
+    add-dir                        # d x' y'
+    dig 2 add 4 mod                # x' y' d' 
+    (dup-2) dip bry                # x' y' d' x' y'
+    set-cell                       # extend spine
+    maze-step                      # continue
+  ) ife
+) def
+
+"make-exit" (
+  m 1 sub (
+    cond
+    (dup 0 eq) 
+      (pop false) case
+    (dup n 2 sub get-cell space eq)
+      (n 1 sub space bry set-cell false) case
+    (true) (1 sub true) case
+    end-cond
+  ) loop
+) def
+
+"nb-walls" 4 def-int-array
+"n-nb-walls" def-int-var
+
+"probe-nb" ( # (x y dir -> ), updates n-nb-walls
+  dup n-nb-walls set-nb-walls # prospectively populate nb-walls
+  add-dir is-expandable
+  (n-nb-walls 1 add set-n-nb-walls) 
+  () ife
+) def
+
+"is-expandable" ( # x y -> bool
+  dup-2 get-cell wall eq
+  ( dup-2 0 probe-wall bry
+    dup-2 1 probe-wall bry
+    dup-2 2 probe-wall bry
+          3 probe-wall bry
+    add add add 3 gte)
+  (pop pop false) ife  
+) def
+
+"probe-wall" ( # (x y dir -> bool)
+  add-dir get-cell wall eq (1) (0) ife
+) def 
+
+"add-dir" (
+  2 mul dup rosette
+  swp 1 add rosette
+  dig add bry add swp
+) def
+
+"rosette" 8 def-int-array
+0   0 set-rosette
+-1  1 set-rosette
+1   2 set-rosette
+0   3 set-rosette
+0   4 set-rosette
+1   5 set-rosette
+-1  6 set-rosette
+0   7 set-rosette
+
+## banner ##
+
+"help" (
+  stdout "usage: WIDTH HEIGHT maze\n" write-str pop
+) def
+
+help

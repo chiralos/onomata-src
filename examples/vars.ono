@@ -1,0 +1,19 @@
+"def-int-var"  ( # (name -> ) 
+  #  defines 'name'     (-> value)
+  #          'set-name' (value ->)
+
+  dup # duplicate name
+  wordsize alloc-static quo
+  dup ((0 peek-int) cat def) dip
+  swp "set-" swp str/cat swp (swp 0 poke-int) cat def
+) def
+
+"def-int-array" ( # (name size -> )
+  # defines 'name'     (index -> value)
+  #         'set-name' (value index ->)
+
+  (dup) dip # duplicate name under size
+  wordsize mul alloc-static quo
+  dup ((swp peek-int) cat def) dip
+  swp "set-" swp str/cat swp (bry poke-int) cat def
+) def

@@ -13,7 +13,7 @@ CC=cc -I.. -ggdb
 CFLAGS=-std=c99
 OBJS=body.o escapechars.o parser.o iolib.o main.o \
 info-table.o jump-table.o bytecode-prim-table.o \
-bytecode.o optimiser.o stack.o
+bytecode.o optimiser.o env.o
 
 body.o : ../ono.c
 	${CC} ${CFLAGS} -I. -o body.o -c ../ono.c
@@ -21,8 +21,8 @@ body.o : ../ono.c
 bytecode.o : ../bytecode.c
 	${CC} ${CFLAGS} -I. -o bytecode.o -c ../bytecode.c
 
-stack.o : ../stack.c
-	${CC} ${CFLAGS} -I. -o stack.o -c ../stack.c
+env.o : ../env.c
+	${CC} ${CFLAGS} -I. -o env.o -c ../env.c
 
 optimiser.o : ../optimiser.c
 	${CC} ${CFLAGS} -I. -o optimiser.o -c ../optimiser.c
@@ -50,11 +50,11 @@ bytecode-prim-table.o : ../make-bytecode-prims.c
 	./make-bytecode-prims >bytecode-prims.c
 	${CC} ${CFLAGS} -I. -o bytecode-prim-table.o -c bytecode-prims.c
 
-ono-unix : ${OBJS}
-	${CC} ${CFLAGS} -o ono-unix ${OBJS}
+onoi : ${OBJS}
+	${CC} ${CFLAGS} -o onoi ${OBJS}
 
 # utils
 
 clean :
 	rm -f *.o make-bytecode-prims bytecode-prims.c 
-	rm -f ono-unix
+	rm -f onoi

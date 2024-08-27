@@ -1,4 +1,4 @@
-#include "stack.h"
+#include "env.h"
 #include <string.h> // for strncmp
 
 extern Env env;
@@ -23,6 +23,20 @@ Word stackItemSize(Word *sp) {
 Word* next(Word* sp) { return sp - stackItemSize(sp); }
 Word* stack2(void) { return next(env.sp); }
 Word* itemBase(Word* p) { return next(p) + 1; }
+
+// error symbol
+
+void unknownSymbol(char* s, int len, Err err) {
+  int copylen = len >= ERR_WORD_BUFSIZE ?
+                ERR_WORD_BUFSIZE-4 : len;
+  memcpy(env.errWord,s,copylen);
+  if (copylen < len) {
+    memcpy(env.errWord+ERR_WORD_BUFSIZE-4,"...",3);
+    len = ERR_WORD_BUFSIZE-1;
+  }
+  env.errWord[len] = '\0';
+  THROW(err);
+}
 
 /////////////
 // dictionary

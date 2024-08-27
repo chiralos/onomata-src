@@ -102,18 +102,9 @@ void pushBuf(void *buf, Word len);
 void popCode(void);
 
 void emitByte(Seg* out, Byte x);
-Word alignedSize(Word bytes);
-Word stackItemSize(Word *sp);
 void overflowCheck(Word sz);
 void reset(Opcode);
-
-Word* next(Word* sp);
-Word* stack2(void);
-Word* itemBase(Word *p);
 
 void repl(void);
 
 #endif
-
-////////
-// Notes

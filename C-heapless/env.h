@@ -1,5 +1,5 @@
-#ifndef _ONOMATA_STACK_H
-#define _ONOMATA_STACK_H
+#ifndef _ONOMATA_ENV_H
+#define _ONOMATA_ENV_H
 
 #include "ono.h"
 
@@ -10,9 +10,11 @@ Word* next(Word* sp);
 Word* stack2(void);
 Word* itemBase(Word *p);
 
-Word*  indexDict(int n);
+Word* indexDict(int n);
 void  lookup(Search* s, Buf* qName);
 int   dictSize(bool includeFrozen);
+
+void unknownSymbol(char*s, int len, Err err);
 
 #endif
 

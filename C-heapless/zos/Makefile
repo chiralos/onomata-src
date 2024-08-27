@@ -22,7 +22,7 @@ TARGETDIR=zos
 CFLAGS=-mz80 --std-c99 -c --codeseg TEXT -I${ZOS_C_HEADERS} -I.. --disable-warning 85
 LDFLAGS=-n -mjwx -i -b _HEADER=0x4000 $(SDLD_FLAGS) -k $(ZOS_PATH)/kernel_headers/sdcc/lib -l z80
 RELS=main.rel body.rel bytecode.rel iolib.rel escapechars.rel parser.rel \
-info-table.rel jump-table.rel bytecode-prim-table.rel stack.rel optimiser.rel
+info-table.rel jump-table.rel bytecode-prim-table.rel env.rel optimiser.rel
 
 body.rel : ../ono.c
 	${CC} ${CFLAGS} -o body.rel -c ../ono.c
@@ -36,8 +36,8 @@ parser.rel : ../parser.c
 bytecode.rel : ../bytecode.c
 	${CC} ${CFLAGS} --disable-warning 94 --disable-warning 126 -o bytecode.rel -c ../bytecode.c
 
-stack.rel : ../stack.c
-	${CC} ${CFLAGS} -o stack.rel -c ../stack.c
+env.rel : ../env.c
+	${CC} ${CFLAGS} -o env.rel -c ../env.c
 
 iolib.rel : iolib.c
 	${CC} ${CFLAGS} -o iolib.rel -c iolib.c
@@ -59,13 +59,13 @@ bytecode-prim-table.rel : ../make-bytecode-prims.c
 	./make-bytecode-prims >bytecode-prims.c
 	${CC} ${CFLAGS} -o bytecode-prim-table.rel -c bytecode-prims.c
 
-ono-zos.bin : ${RELS}
+onoi : ${RELS}
 	${LD} ${LDFLAGS} ono-zos.ihx ${ZOS_CRT0} ${RELS}
-	${OBJCOPY} --input-target=ihex --output-target=binary ono-zos.ihx ono-zos.bin
+	${OBJCOPY} --input-target=ihex --output-target=binary ono-zos.ihx onoi
 
 # utils
 
 clean :
 	rm -f *.bin *.lis *.o *.ihx *.map *.noi *.lst *.asm *.rel *.sym
 	rm -f *.mem *.lk
-	rm -f ono-zos.bin make-bytecode-prims bytecode-prims.c
+	rm -f onoi make-bytecode-prims bytecode-prims.c

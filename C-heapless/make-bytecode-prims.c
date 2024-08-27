@@ -16,9 +16,9 @@ Def defs[] = {
   { "dipBytecode", "swp quo cat run" },
   { "loopBytecode", "dup dip swp (loop) (pop) ife" },
   { "writeLineBytecode", 
-    "\"\\n\" str-cat stdout swp write-str pop" },
+    "\"\\n\" str/cat stdout swp write-str pop" },
   { "loadonceBytecode",
-    "dup \"-loaded\" str-cat dup is-defined"
+    "dup \"-loaded\" str/cat dup is-defined"
     "(pop pop) ((true) def load) ife" },
   { "loadBytecode", // load
       "read-only open dup 0 lt"
@@ -26,25 +26,25 @@ Def defs[] = {
       "(dup (\"\" 1 3 pack () swp load-fd) dip close pop)"
       "ife" },
   { "loadfdBytecode",
-      "0 tup-get 0 lt not"
-      "( 0 tup-get swp 1 tup-get swp"
+      "dup 0 tup/get 0 lt not"
+      "( dup 0 tup/get swp dup 1 tup/get swp"
       "  ( dup len 192 swp sub swp (read-str) dip"
-      "    swp (swp str-cat) dip"
+      "    swp (swp str/cat) dip"
       "  ) dip"
       "  swp dup 0 lt"
       "  (pop pop pop \"read error\" write-line false)"
-      "  ((swp 1 tup-set) dip 0 eq (-1 0 tup-set) () ife true)"
+      "  ((swp 1 tup/set) dip 0 eq (-1 0 tup/set) () ife true)"
       "  ife"
       ") (true) ife"
-      "( 2 tup-get swp 1 tup-get swp "
+      "( dup 2 tup/get swp dup 1 tup/get swp "
       "  (parse) dip swp dup 1 lt"
-      "  ( pop swp 1 tup-set swp dup (2 tup-set) dip"
+      "  ( pop swp 1 tup/set swp dup (2 tup/set) dip"
       "    1 eq (swp dip () swp) () ife true)"
       "  ((pop pop) dip errstr write-line false)" // see [1]
       "  ife"
       ") (false) ife"
-      "( 1 tup-get len 0 eq swp 0 tup-get 0 lt swu and"
-      "  ( 2 tup-get 1 gt"
+      "( dup 1 tup/get len 0 eq swp dup 0 tup/get 0 lt swu and"
+      "  ( dup 2 tup/get 1 gt"
       "    (\"incomplete parse\" write-line) () ife true"
       "  ) (false) ife not"
       ") (false) ife"
@@ -52,7 +52,7 @@ Def defs[] = {
   { "loadstrBytecode",
       "-1 swp 1 3 pack () swp load-fd" },
   { "saveBytecode",
-      "write-only trunc bit-or creat bit-or open "
+      "write-only trunc bit/or creat bit/or open "
       "dup 0 lt"
       "(pop \"open error\" write-line)"
       "(dup (save-fd) dip close pop)"
@@ -95,7 +95,13 @@ int main(int argc, char** argv) {
     in.end     = out.cursor;
     out.cursor = optBuf;
     out.end    = out.cursor + BUFSIZE;
-    err = peepholeOptimise(&in,&out);
+    if ((env.err = setjmp(env.catch)) == 0) {
+      err = peepholeOptimise(&in,&out);
+    } else {
+      if (env.err == ERR_UNKNOWN_SYMBOL)
+        printf("unknown symbol %s\n", env.errWord);
+    }
+
     if (err) {
       printf("optimiser error: %d\n",err);
       exit(env.err);

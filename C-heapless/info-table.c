@@ -43,11 +43,11 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "div",          "nn"  }, // OP_DIV
   { "mod",          "nn"  }, // OP_MOD
 
-  { "bit-and",      "nn"  }, // OP_BITAND
-  { "bit-or",       "nn"  }, // OP_BITOR
-  { "bit-not",      "n"   }, // OP_BITNOT
-  { "bit-xor",      "nn"  }, // OP_BITXOR
-  { "bit-shift",    "nn"  }, // OP_BITSHIFT
+  { "bit/and",      "nn"  }, // OP_BITAND
+  { "bit/or",       "nn"  }, // OP_BITOR
+  { "bit/not",      "n"   }, // OP_BITNOT
+  { "bit/xor",      "nn"  }, // OP_BITXOR
+  { "bit/shift",    "nn"  }, // OP_BITSHIFT
 
   { "cmp",          "oo"  }, // OP_CMP
   { "eq",           "oo"  }, // OP_EQ
@@ -58,21 +58,21 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "gte",          "oo"  }, // OP_GTE
 
   { "len",          "l"   }, // OP_LEN
+  { "slc",          "nnm" }, // OP_MEMSLICE
+  { "brk",          "nm"  }, // OP_STRBRK
 
   { "pack",         "n"   }, // OP_PACK not statically typed
   { "unpack",       "t"   }, // OP_UNPACK
-  { "tup-get",      "nt"  }, // OP_TUPGET
-  { "tup-set",      "nat" }, // OP_TUPSET
+  { "tup/get",      "nt"  }, // OP_TUPGET
+  { "tup/set",      "nat" }, // OP_TUPSET
 
   { "str",          "a"   }, // OP_STR see [1]
-  { "str-cat",      "ss"  }, // OP_STRCAT
-  { "str-brk",      "ns"  }, // OP_STRBRK
-  { "str-get",      "ns"  }, // OP_STRGET
-  { "str-set",      "nns" }, // OP_STRSET
+  { "str/cat",      "ss"  }, // OP_STRCAT
+  { "str/get",      "ns"  }, // OP_STRGET
+  { "str/set",      "nns" }, // OP_STRSET
   { "parse-int",    "s"   }, // OP_PARSEINT
 
-  { "mem-slice",    "nnp" }, // OP_MEMSLICE
-  { "mem-cpy",      "mp"  }, // OP_MEMCPY
+  { "overwrite",    "mp"  }, // OP_OVERWRITE
   { "peek",         "np"  }, // OP_PEEK
   { "poke",         "nnp" }, // OP_POKE
   { "peek-int",     "np"  }, // OP_PEEKINT
@@ -106,6 +106,7 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "errstr",       "n"   }, // OP_ERRSTR
   { "parse",        "snr" }, // OP_PARSE
   { "write-stack",  ""    }, // OP_WRITESTACK
+
   { "is-defined",   "s"   }, // OP_ISDEF
   { "undef",        "s"   }, // OP_UNDEF
   { "list",         ""    }, // OP_LIST

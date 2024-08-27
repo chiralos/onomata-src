@@ -32,19 +32,19 @@ extern void lteCode        (void);
 extern void gtCode         (void);
 extern void gteCode        (void);
 extern void lenCode        (void);
+extern void slcCode        (void);
+extern void brkCode        (void);
 extern void packCode       (void);
 extern void unpackCode     (void);
 extern void tupgetCode     (void);
 extern void tupsetCode     (void);
 extern void strCode        (void);
-extern void strbrkCode     (void);
 extern void strgetCode     (void);
 extern void strsetCode     (void);
 extern void parseintCode   (void);
 
-extern void memsliceCode   (void);
-extern void memcpyCode     (void);
-extern void peekpokeintCode(void);
+extern void overwriteCode  (void);
+extern void peekpokeCode   (void);
 
 extern void allocstaticCode(void);
 
@@ -144,6 +144,8 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   gteCode,        // OP_GTE
 
   lenCode,        // OP_LEN
+  slcCode,        // OP_SLC
+  brkCode,        // OP_BRK
 
   packCode,       // OP_PACK
   unpackCode,     // OP_UNPACK
@@ -152,17 +154,15 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
 
   strCode,        // OP_STR
   catCode,        // OP_STRCAT
-  strbrkCode,     // OP_STRBRK
   strgetCode,     // OP_STRGET
   strsetCode,     // OP_STRSET
   parseintCode,   // OP_PARSEINT
 
-  memsliceCode,   // OP_MEMRAW
-  memcpyCode,     // OP_MEMCPY
-  peekpokeintCode,// OP_PEEK
-  peekpokeintCode,// OP_POKE
-  peekpokeintCode,// OP_PEEKINT
-  peekpokeintCode,// OP_POKEINT
+  overwriteCode,  // OP_OVERWRITE
+  peekpokeCode,   // OP_PEEK
+  peekpokeCode,   // OP_POKE
+  peekpokeCode,   // OP_PEEKINT
+  peekpokeCode,   // OP_POKEINT
 
   allocstaticCode,// OP_DEFMEM
 

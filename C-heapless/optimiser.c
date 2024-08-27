@@ -1,6 +1,6 @@
 #include "optimiser.h"
 #include "bytecode.h"
-#include "stack.h"
+#include "env.h"
 #include <string.h> // for memcpy, memmove
 
 /////////
@@ -147,8 +147,10 @@ Err peepholeOptimise(Seg* in, Seg* out) {
       Buf qName = { .len = sz, .data = in->cursor + 1 + n };
       Search s;
       lookup(&s,&qName);
-      if (s.dp == NULL)
+      if (s.dp == NULL) {
+        unknownSymbol((char *)qName.data,qName.len,ERR_UNKNOWN_SYMBOL);
         return ERR_UNKNOWN_SYMBOL;
+      }
       OVERFLOW_CHECK(1+WORDSIZE);
       out->cursor[0] = opcodeWithLogSize(OP_CALL_STATIC,logSizeFromSize(WORDSIZE));
       out->cursor++;
