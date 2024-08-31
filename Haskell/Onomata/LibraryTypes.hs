@@ -29,7 +29,7 @@ underflow :: String -> State -> IO State
 underflow nm = err (nm ++ ": stack underflow")
 
 mkLib :: [(String,Exp)] -> Library
-mkLib = map (fstMap fromString)
+mkLib defs = [(fromString nm,(exp,False)) | (nm,exp) <- defs]
 
 -------
 -- Misc

@@ -15,11 +15,11 @@
 
 const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "nop",          ""    }, // OP_NOP
-
   { "pop",          "a"   }, // OP_POP
   { "dup",          "a"   }, // OP_DUP
   { "swp",          "aa"  }, // OP_SWP
-  { "swu",          "aaa" }, // OP_SWU
+
+  { "swu",          "aaa" }, // OP_SWU see [2]
   { "swa",          "aaa" }, // OP_SWA
   { "dig",          "aaa" }, // OP_DIG
   { "bry",          "aaa" }, // OP_BRY
@@ -143,4 +143,8 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
 [1] Actually only bool, int, string are printable, but there's
     only one thing (str) that uses it so don't bother adding it
 to the generic types check.
+
+[2] The generalised swap words interupt the onomata core and
+    come are after swp (and in this order) for decoding reasons; 
+don't reorder without taking that into account.
 */

@@ -15,6 +15,9 @@ module Onomata.DynLib (
   dynLib
   ) where
 
+import Control.Monad (when)
+import Data.List (partition)
+
 import Data.Dict
 
 import Onomata.LibraryTypes
@@ -23,27 +26,61 @@ import Onomata.Types
 
 dynLib = mkLib [
   ("def",     Prm primDef),
-  ("parse",   Prm primParse),
-  ("unparse", Prm primUnparse),
-  ("quit",    Prm (\(stk,env) -> return (stk,setExit env)))
+
+  ("clear", Prm (\(stk,env) -> ok ([],env))),
+  -- reset is handled in Library module
+  ("list",  Prm primList),
+  ("show",  Prm primShow),
+  ("undef", Prm primUndef)
   ]
 
-primDef (Str wName : q : stk, env) = res where
-  res = ok (stk, addBinding (wName,q) env)
+primDef (q : Str wName : stk, env) = res where
+  res = ok (stk, addBinding (wName,(q,True)) env)
 primDef st = err ("def: expected: val str") st
 
-primParse st@(Str s : ps, env) = 
-  case parseExp "(interactive)" $ toString s of
-    Left  erm  -> err ("parse: " ++ erm) st
-    Right expr -> ok (expr : ps,env)
-primParse st = err ("parse: expected: str") st
+maxLineLen = 40
 
-primUnparse (p : ps, env) = 
-  ok ((Str $ fromString $ show p) : ps, env)
-primUnparse st = underflow "unparse" st
+primList (ps,env) = do
+  let 
+    f n [] = when (n > 0) (putStr "\n")
+    f n (w:wds) = do
+      n' <- if n > maxLineLen
+        then putStr "\n" >> return 0
+        else return (n + length w)
+      putStr w
+      putStr " "
+      f n' wds
+    (user,builtin) = 
+      pairmap (map (toString . fst)) $
+      partition (snd . snd)          $
+      listDict                       $ 
+      bindings env
+  f 0 builtin
+  when (not $ null user) $ putStrLn "-- user --"
+  f 0 user
+  ok (ps,env)
+
+primShow st@(Str s : ps,env) = do
+  case consult env s of
+    Nothing -> err "unknown symbol" st
+    Just e  -> do
+      putStrLn $ show e
+      ok (ps,env)
+primShow st = err ("show: expected Str") st
+
+primUndef st@(Str s : ps,env) = do
+  case consult env s of
+    Nothing -> err "unknown symbol" st
+    Just e  -> ok (ps, Env { 
+      status = OK,
+      bindings = bindings env `del` s })
+primUndef st = err ("undef: expected Str") st
 
 -------
 -- Misc
+
+pairmap :: (a -> b) -> (a,a) -> (b,b)
+pairmap f (x,y) = (f x, f y)
 
 fi = fromInteger
 

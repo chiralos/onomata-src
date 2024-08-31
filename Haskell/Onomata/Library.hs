@@ -15,20 +15,24 @@ module Onomata.Library (
   defaultEnv
   ) where
 
-import Onomata.CoreLib
+import Onomata.CommonLib
 import Onomata.DynLib
 import Onomata.Types
 
 -- see [1]
 defaultEnv :: Env
-defaultEnv = overwriteEnv defaultLib emptyEnv
+defaultEnv = addBinding 
+  (fromString "reset", (Prm primReset,False))
+  (overwriteEnv defaultLib emptyEnv)
 
 overwriteEnv :: Library -> Env -> Env
 overwriteEnv lib env = env' where
   env' = foldl (flip addBinding) env lib
 
 defaultLib :: Library
-defaultLib = coreLib ++ dynLib
+defaultLib = commonLib ++ dynLib
+
+primReset (_,_) = ok ([],defaultEnv)
 
 --------
 -- Notes

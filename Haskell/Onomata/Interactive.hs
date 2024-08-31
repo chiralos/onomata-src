@@ -11,7 +11,7 @@
             \|/
 -}
 module Onomata.Interactive ( 
-  repl
+  onoi
   ) where
 
 import Control.Exception
@@ -23,8 +23,8 @@ import Onomata.Library
 import Onomata.Parser
 import Onomata.Types
 
-repl :: IO ()
-repl = launch where
+onoi :: IO ()
+onoi = launch where
   launch = bracketOnError 
     (initializeInput defaultSettings)
     cancelInput
@@ -50,7 +50,7 @@ repl = launch where
               queryInput hd (outputStrLn ("error: " ++ toString erm))
               continue
     stackToConsole stk = 
-      queryInput hd (outputStrLn ("| " ++ printStack stk))
+      queryInput hd (outputStr $ printStack stk)
 
 --------
 -- Notes

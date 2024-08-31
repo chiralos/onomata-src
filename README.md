@@ -1,5 +1,7 @@
 # Some Onomata hosts
 
+## [Haskell](Haskell/README.md)
+
 ## [Heapless C](C-heapless/README.md)
 
 ## Language
@@ -70,8 +72,8 @@ top. Update operations put the value to be inserted in between.
 
 | Name         | Type                               |  Notes
 |--------------|------------------------------------|----------------------
-| nop          |                    ->              | [1]
-| pop          | (A)                ->              |
+| nop          |                    ->              | 
+| pop          | (A)                ->              | [1]
 | dup          | (A)                -> (A) (A)      |
 | swp          | (A) (B)            -> (B) (A)      |
 | quo          | (A)                -> (-> (A))     |
@@ -107,25 +109,32 @@ top. Update operations put the value to be inserted in between.
 | lte          | (O) (O)            -> (Bool)       | (O Ord)
 | gt           | (O) (O)            -> (Bool)       | (O Ord)
 | gte          | (O) (O)            -> (Bool)       | (O Ord)
-| len          | (L)                -> (Int)        | (L Len)
-| slc          | (BS) (Int) (Int)   -> (BS)         | (BS ByteSrc)
-| brk          | (BS) (Int)         -> (BS)         | (BS ByteSrc)
+
 | pack         | ... (Int)          -> (Tup)        | [3] [10]
 | unpack       | (Tup)              -> ...          | [3]
 | tup/get      | (Tup) (Int)        -> (A)          | [10]
 | tup/set      | (Tup) (A) (Int)    -> (Tup)        | [10]
+
+| len          | (L)                -> (Int)        | (L Len)
+| slc          | (BS) (Int) (Int)   -> (BS)         | (BS ByteSrc)
+| brk          | (BS) (Int)         -> (BS)         | (BS ByteSrc)
+
 | str          | (S)                -> (Str)        | (S Stringform)
 | str/cat      | (Str) (Str)        -> (Str)        |
 | str/get      | (Str) (Int)        -> (Int)        | peek byte
 | str/set      | (Str) (Int) (Int)  -> (Str)        | with updated byte
 | parse-int    | (Str)              -> (Int) (Int)  | [6]
+
 | overwrite    | (Buf) (BS)         ->              | dst src ->
 | peek         | (Buf) (Int)        -> (Int)        | peek byte
 | poke         | (Buf) (Int) (Int)  ->              | poke byte
 | peek-int     | (Buf) (Int)        -> (Int)        |
 | poke-int     | (Buf) (Int) (Int)  ->              |
-| alloc-static | (Int)              -> (Buf)        | [7]
+
 | sleep-milli  | (Int)              ->              |
+
+| alloc-static | (Int)              -> (Buf)        | [7]
+
 | stdin        |                    -> (Int)        |
 | stdout       |                    -> (Int)        |
 | open         | (Str) (Int)        -> (Int)        | name flags -> err
@@ -142,8 +151,9 @@ top. Update operations put the value to be inserted in between.
 | trunc        |                    -> (Int)        |
 | creat        |                    -> (Int)        |
 | nonblocking  |                    -> (Int)        |
-| avail        |                    -> (Int)        |
+
 | wordsize     |                    -> (Int)        | in bytes
+| exit         |                                    | [8]
 
 | def          | (Str) (A -> B)     ->              | [9]
 | def-mem      | (Str) (Int)        ->              | alloc-static quo def
@@ -153,17 +163,17 @@ top. Update operations put the value to be inserted in between.
 | save         | (Str)              ->              | [13]
 | save-fd      | (Int)              ->              |
 
-| exit         |                                    | [8]
 | clear        |                                    | clears stack
 | reset        |                                    | resets system
 | list         |                    ->              | lists defs
 | show         | (Str)              ->              | writes def to stdout
-| freeze       |                    ->              | optimise current defs
 | undef        | (Str)              ->              |
+| avail        |                    -> (Int)        |
+| freeze       |                    ->              | optimise current defs
 
 ```
 
-[1] `nop pop dup swp quo cat run` are together Turing-complete.
+[1] `pop dup swp quo cat run` are together Turing-complete.
 
 [2] `ife` has type: `A (Bool) (A -> B) (A -> B) -> B`
 

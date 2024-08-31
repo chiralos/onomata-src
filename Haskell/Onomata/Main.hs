@@ -14,12 +14,8 @@ module Onomata.Main(
   main
   ) where
 
--- TESTING prune
-import Control.Exception
 import System.Environment (getArgs)
 import System.Exit
--- HERE file io (readFileCompletely, exceptions)
---      stderr
 
 import Onomata.Interactive
 import Onomata.Interpreter
@@ -31,7 +27,7 @@ main :: IO ()
 main = do
   args <- getArgs
   if length args == 0
-    then repl
+    then onoi
     else batch ([],defaultEnv) args
   exitWith ExitSuccess
 

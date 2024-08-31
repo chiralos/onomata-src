@@ -12,13 +12,14 @@
 -}
 
 module Onomata.Parser ( 
-  parseExp, parseProg, printStack
+  parseExp, parseProg, printStack, parseStatic
   ) where
 
-import Data.Ratio
+import Data.Char (chr)
 import Data.List (intercalate)
+import Data.Ratio
 import Data.Semigroup ((<>))
-import Numeric (readSigned,readDec)
+import Numeric (readSigned,readDec,readHex)
 import Text.Parsec
 import Text.Parsec.Char
 
@@ -29,6 +30,11 @@ parseExp  = parseX parseItem
 parseProg = parseX parseSeq
 
 parseX p fn = either (Left . show) Right . parse (parseTop p) fn
+
+parseStatic :: String -> Exp
+parseStatic s = case parseProg "" s of
+  Right e -> e
+  Left  _ -> undefined
 
 type ParseExp    = Parsec [Char] () Exp
 type ParseString = Parsec [Char] () String
@@ -42,50 +48,58 @@ parseSeq = spaces >> (Seq <$> (parseItem `sepEndBy` spaces))
 
 parseItem = parseSym <|> parseQuote <|> parseStr <|> parseNum
 
-parseSym = (Sym . fromString) <$> many1 parseSymChar
+parseSym = (Sym . fromString) <$> (box letter <> many parseSymChar)
   
-parseSymChar = char '/' <|> letter
+parseSymChar = char '-' <|> char '/' <|> alphaNum
 
 parseQuote = Quo <$> (between (char '(') (char ')') parseSeq)
 
-parseStr = parseBQStr <|> parseDQStr
-
--- HERE
-parseDQStr = (Str . fromString) <$> 
+parseStr = (Str . fromString) <$> 
   (between (char '"') (char '"') (many parseStrChar))
-
-parseBQStr = do
-  char '\''
-  Sym s <- parseSym
-  return (Str s)
 
 parseStrChar = (char '\\' >> parseEscChar) <|> noneOf ['"']
 
-parseEscChar = choice [
-  char 'n'  >> return '\n',
+parseEscChar = parseHexEscChars <|> parseSingleEscChar
+
+parseHexEscChars = 
+  (chr . fst . head . readHex) <$> 
+  (char 'x' >> box hexDigit <> box hexDigit)
+
+parseSingleEscChar = choice [
   char '\\' >> return '\\',
-  char '"'  >> return '"' ]
+  char '"'  >> return '"',
+  char '0'  >> return '\0',
+  char 'n'  >> return '\n',
+  char 'r'  >> return '\r',
+  char 't'  >> return '\t',
+  char 'f'  >> return '\f',
+  char 'v'  >> return '\v'
+  ]
 
-parseNum = strToILit <$> p where
-  strToILit = Num . fst . head . (readSigned readDec)
-  p         = parseSignedInt
 
-parseInt, parseSignedInt :: ParseString
-strChar, optChar :: Char -> ParseString
+parseNum = try parseHexInt <|> parseDecInt
 
-parseInt       = many1 digit
-parseSignedInt = optChar '-' <> parseInt
-strChar c      = ((:[]) <$> char c)
-optChar c      = option [] (strChar c)
+parseHexInt = 
+  strToILit readHex <$>
+  (optChar '-' <> (string "0x" >> many1 hexDigit))
+
+parseDecInt =
+  strToILit readDec <$>
+  (optChar '-' <> many1 digit)
+
+strToILit f = Num . fst . head . (readSigned f)
+
+strChar c = box (char c)
+optChar c = option [] (strChar c)
+box       = ((:[]) <$>)
 
 --
 
 printExp (Str s)     = "\"" ++ (printEscChar =<< toString s) ++ "\""
-printExp (Num n)     = show n
+printExp (Num n)     = show n 
 printExp (Bit True)  = "true"
 printExp (Bit False) = "false"
-printExp (Vec v)     = printSeq "[" "]" v
-printExp (Ref _)     = "(-ref-)"
+printExp (Tup v)     = printSeq "[" "]" v
 printExp (Sym s)     = toString s
 printExp (Seq ps)    = printSeq "(" ")" ps
 printExp (Quo p)     = "(" ++ printExp p ++ ")"
@@ -97,7 +111,7 @@ printEscChar c    = [c]
 printSeq o c exps = o ++ (intercalate " " $ map printExp exps) ++ c
 
 printStack :: Stack -> String
-printStack = intercalate " " . map show . reverse
+printStack = (>>= ((++ "\n") . ("| " ++) . show))
 
 instance Show Exp where
   show = printExp

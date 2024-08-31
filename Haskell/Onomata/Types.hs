@@ -29,13 +29,11 @@ import Data.Dict
 
 type Bytes = B.Bytes
 
-
 data Exp =
     Bit Bool
   | Num Int
   | Str Bytes
-  | Vec [Exp]
-  | Ref (IORef Exp)
+  | Tup [Exp]
 
   | Sym Bytes
 
@@ -55,11 +53,12 @@ instance Ord Exp where
   Str a <= Str b = a <= b
   _     <= _     = error "unsupported Ord"
 
+type SymbolInfo = Bool -- true for user def
 data Env = Env {
-  bindings :: Dict Bytes Exp,
+  bindings :: Dict Bytes (Exp,SymbolInfo),
   status   :: Status }
 
-addBinding :: (Bytes,Exp) -> Env -> Env 
+addBinding :: (Bytes,(Exp,SymbolInfo)) -> Env -> Env 
 addBinding entry env = env {
   bindings = bindings env `put` entry }
 
@@ -78,7 +77,7 @@ setOK   = setStatus OK
 type State   = (Stack, Env) -- see [1]
 type Stack   = [Exp]
 type Program = State -> IO State
-type Library = [(Bytes,Exp)]
+type Library = [(Bytes,(Exp,Bool))]
 
 emptyState :: State
 emptyState = ([],emptyEnv)
@@ -89,7 +88,7 @@ emptyEnv = Env {
   status   = OK }
 
 consult :: Env -> Bytes -> Maybe Exp
-consult env = (fmap snd) . look (bindings env)
+consult env = (fmap (fst . snd)) . look (bindings env)
 
 err :: String -> State -> IO State
 err msg (s,env) = return (s,setError (fromString msg) env)
@@ -97,7 +96,6 @@ err msg (s,env) = return (s,setError (fromString msg) env)
 ok :: (Stack,Env) -> IO State
 ok (s,env) = return (s,setOK env)
 
--- HERE 
 toString :: Bytes -> String
 toString = map (chr . fromIntegral) . B.unpack
 
@@ -108,7 +106,7 @@ fromString = B.pack . map (fromIntegral . ord)
 -- Notes
 
 {-
-  [1] We deliberate do not make this (Prog,Stack,Env) to
+  [1] We deliberately do not make this (Prog,Stack,Env) to
       emphasise that programs do _not_ have access to the
   future of the computation. This is not Forth.
 
