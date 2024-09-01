@@ -1321,21 +1321,41 @@ void writeDefBody(Word *dp, int fd) {
 
 #define MAX_LINE_LENGTH 40
 
+void eolCheck(int* n) {
+  if (*n > MAX_LINE_LENGTH) {
+    writeNL(stdoutFD);
+    *n = 0;
+  }
+}
+    
 void listCode(void) {
   int n = 0;
+  Word sz = 0;
+  for (int i=0;i <= LAST_PARSEABLE_OP;i++) {
+    eolCheck(&n);
+    const InstructionInfo* ii = &(opInfoTable[i]);
+    sz = strlen(ii->name);
+    ioWrite(stdoutFD,ii->name,sz);
+    writeChar(' ',stdoutFD);
+    n += sz + 1;
+  }
+  if (n > 0) writeNL(stdoutFD);
+
+  n = 0;
   Word* dp = env.dt;
+  if (env.dt > env.base) {
+    ioWrite(stdoutFD,"-- user --",10);
+    writeNL(stdoutFD);
+  }
   while (dp > env.base) {
-    if (n > MAX_LINE_LENGTH) {
-      writeNL(stdoutFD);
-      n = 0;
-    }
+    eolCheck(&n);
     if (dp == env.ft) {
       if (n > 0) writeNL(stdoutFD);
       ioWrite(stdoutFD,"-- frozen --",12);
       writeNL(stdoutFD);
       n = 0;
     }
-    Word sz = dp[-1];
+    sz = dp[-1];
     if (sz > 0) {
       ioWrite(stdoutFD,(char *)itemBase(dp),sz);
       writeChar(' ',stdoutFD);
@@ -1344,6 +1364,7 @@ void listCode(void) {
     dp = next(dp);
     n += sz + 1;
   }
+  if (n > 0) writeNL(stdoutFD);
 }
 
 void showCode(void) {
