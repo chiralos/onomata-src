@@ -147,6 +147,7 @@ top. Update operations put the value to be inserted in between.
 | seek         | (Int) (Int) (Int)  -> (Int)        | fd ofs whence -> pos
 | read-str     | (Int) (Int)        -> (Str) (Int)  | fd len -> str err
 | write-str    | (Int) (Str)        -> (Int)        | fd str -> err
+| set-raw      | (Int) (Bool)       -> (Int)        | fd on/off -> err [17]
 | seek-set     |                    -> (Int)        |
 | seek-cur     |                    -> (Int)        |
 | seek-end     |                    -> (Int)        |
@@ -233,3 +234,5 @@ and saved it. Cannot save frozen code.
 [15] Not part of 'small interpeter' collection.
 
 [16] Divide by zero is undefined and should panic.
+
+[17] Unfortunately raw terminal IO is platform specific.

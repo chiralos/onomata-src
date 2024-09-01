@@ -4,6 +4,7 @@
 #include <zos_sys.h>
 #include <zos_time.h>
 #include <zos_vfs.h>
+#include <zos_keyboard.h>
 
 void sleepmilliCode(void) {
   Int dt = popInt();
@@ -115,6 +116,15 @@ void writestrCode(void) {
   zos_err_t err = longIO(false,fd,buf,&len);
   env.sp = b;
   b[-1] = (Int) err; // NOTE convert to std err code
+}
+
+void setrawCode(void) {
+  bool set = env.sp[0] == TAG_TRUE;
+  env.sp--;
+  int fd = popInt();
+  int r = ioctl(fd,KB_CMD_SET_MODE,
+                   set ? KB_MODE_RAW : KB_MODE_COOKED);
+  pushInt(r);
 }
 
 ////////

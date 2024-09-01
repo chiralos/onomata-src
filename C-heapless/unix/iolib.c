@@ -2,6 +2,7 @@
 #include "env.h"
 #include <fcntl.h>
 #include <unistd.h>
+#include <termios.h>
 
 void sleepmilliCode(void) {
   Int dt = popInt();
@@ -76,6 +77,19 @@ void writestrCode(void) {
   Int r    = write(fd,buf,len);
   env.sp   = b;
   b[-1]    = r; // NOTE convert to onomata IO error code
+}
+
+void setrawCode(void) {
+  bool set = env.sp[0] == TAG_TRUE;
+  env.sp--;
+  int fd = popInt();
+  struct termios attr;
+  tcgetattr(fd, &attr);
+  attr.c_lflag &= ~(ICANON | ECHO);
+  if (!set)
+    attr.c_lflag |= (ICANON | ECHO);
+  int r = tcsetattr(fd, TCSANOW, &attr);
+  pushInt(r);
 }
 
 ////////

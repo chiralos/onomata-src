@@ -1,0 +1,13 @@
+"test" (
+  stdin true set-raw pop
+  ( stdin 1 read-str 1 eq
+    ( dup
+      0 str/get str " " str/cat
+      stdout swp write-str pop
+      "q" eq (false) (true) ife)
+    (pop true)
+    ife
+  ) loop
+  stdout "\n" write-str pop
+  stdin false set-raw pop
+) def

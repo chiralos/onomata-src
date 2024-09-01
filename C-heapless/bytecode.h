@@ -84,6 +84,7 @@ typedef enum Opcode {
   OP_SEEK,
   OP_READSTR,
   OP_WRITESTR,
+  OP_SETRAW,
   OP_SEEKSET,
   OP_SEEKCUR,
   OP_SEEKEND,
