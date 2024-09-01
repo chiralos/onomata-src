@@ -35,7 +35,9 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "or",           "bb"  }, // OP_OR
   { "not",          "b"   }, // OP_NOT
 
+  { "choose",       "baa" }, // OP_CHOOSE
   { "ife",          "rrb" }, // OP_IFE
+  { "dip",          "ra"  }, // OP_DIP
 
   { "add",          "nn"  }, // OP_ADD
   { "sub",          "nn"  }, // OP_SUB
@@ -58,7 +60,8 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "gte",          "oo"  }, // OP_GTE
 
   { "len",          "l"   }, // OP_LEN
-  { "slc",          "nnm" }, // OP_MEMSLICE
+  { "slc",          "nnm" }, // OP_SLC
+  { "sbs",          "nnm" }, // OP_SBS
   { "brk",          "nm"  }, // OP_STRBRK
 
   { "pack",         "n"   }, // OP_PACK not statically typed
@@ -67,6 +70,7 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "tup/set",      "nat" }, // OP_TUPSET
 
   { "str",          "a"   }, // OP_STR see [1]
+  { "chr",          "n"   }, // OP_CHR
   { "str/cat",      "ss"  }, // OP_STRCAT
   { "str/get",      "ns"  }, // OP_STRGET
   { "str/set",      "nns" }, // OP_STRSET
@@ -104,7 +108,7 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
 
   { "save-fd",      "n"   }, // OP_SAVEFD
   { "errstr",       "n"   }, // OP_ERRSTR
-  { "parse",        "snr" }, // OP_PARSE
+  { "parse-part",   "snr" }, // OP_PARSE
   { "write-stack",  ""    }, // OP_WRITESTACK
 
   { "is-defined",   "s"   }, // OP_ISDEF
@@ -122,7 +126,6 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "freeze",       ""    }, // OP_FREEZE
   { "exit",         ""    }, // OP_EXIT
 
-  { "dip",          "ra"  }, // OP_DIP
   { "loop",         "r"   }, // OP_LOOP
   { "write-line",   "s"   }, // OP_WRITELINE
   { "load-once",    "s"   }, // OP_LOADONCE

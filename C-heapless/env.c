@@ -27,14 +27,10 @@ Word* itemBase(Word* p) { return next(p) + 1; }
 // error symbol
 
 void unknownSymbol(char* s, int len, Err err) {
-  int copylen = len >= ERR_WORD_BUFSIZE ?
-                ERR_WORD_BUFSIZE-4 : len;
+  int copylen = len >= ERR_WORD_BUFSIZE ? 
+                ERR_WORD_BUFSIZE-1 : len;
   memcpy(env.errWord,s,copylen);
-  if (copylen < len) {
-    memcpy(env.errWord+ERR_WORD_BUFSIZE-4,"...",3);
-    len = ERR_WORD_BUFSIZE-1;
-  }
-  env.errWord[len] = '\0';
+  env.errWord[copylen] = '\0';
   THROW(err);
 }
 
@@ -98,6 +94,17 @@ int dictSize(bool includeFrozen) {
   int n = 0;
   probeDict(counterFunc,(void*)&n,includeFrozen ? env.base : env.ft);
   return n;
+}
+
+int lookupPrim(char* wordStart, Word wordLen) {
+  for (int i=0;i <= LAST_PARSEABLE_OP;i++) {
+    const InstructionInfo* ii = &(opInfoTable[i]);
+    int nameLen = strlen(ii->name);
+    if (wordLen == nameLen && 
+        strncmp(wordStart,ii->name,nameLen) == 0)
+      return i;
+  }
+  return -1;
 }
 
 ////////

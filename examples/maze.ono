@@ -42,7 +42,7 @@
 "space" (6)  def # space
 
 "cell2ascii" ( # cell-num -> string
-  "^>v<o#." swp 1 slc
+  "^>v<o#." swp 1 sbs
 ) def 
 
 ## ASCII readout ##

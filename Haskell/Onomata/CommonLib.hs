@@ -115,6 +115,7 @@ intLib = mkLib [
   ("mul",    Prm $ binMathPrim False "mul" (*)),
   ("div",    Prm $ binMathPrim True  "div" div),
   ("mod",    Prm $ binMathPrim True  "mod" mod),
+
   ("divmod", Prm $ primDivmod),
   ("neg",    Prm $ unaryMathPrim "neg" negate),
   ("abs",    Prm $ unaryMathPrim "abs" abs)
@@ -315,6 +316,7 @@ primStrSet st@(Num n:Num x:Str s:ps,env)
     s' = s1 <> singleByte x <> s2
 primStrSet st = underflow "str/set" st
 
+-- see [1]
 parseLib :: Library
 parseLib = mkLib [
   ("parse",   Prm primParse),
@@ -343,4 +345,6 @@ primWordsize (ps,env) = ok (Num ws : ps,env) where
 --------
 -- Notes
 {-
+[1] Experimental. 'parse' should probably parse a sequence and
+    always return a proc.
 -}

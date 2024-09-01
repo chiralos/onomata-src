@@ -26,7 +26,9 @@ typedef enum Opcode {
   OP_OR,
   OP_NOT,
 
+  OP_CHOOSE,
   OP_IFE,
+  OP_DIP,
 
   OP_ADD,
   OP_SUB,
@@ -50,6 +52,7 @@ typedef enum Opcode {
 
   OP_LEN,
   OP_SLC,
+  OP_SBS,
   OP_BRK,
 
   OP_PACK,
@@ -58,6 +61,7 @@ typedef enum Opcode {
   OP_TUPSET,
 
   OP_STR,
+  OP_CHR,
   OP_STRCAT,
   OP_STRGET,
   OP_STRSET,
@@ -95,7 +99,7 @@ typedef enum Opcode {
 
   OP_SAVEFD,
   OP_ERRSTR,
-  OP_PARSE,
+  OP_PARSE_PART,
   OP_WRITESTACK,
   OP_ISDEF,
   OP_UNDEF,
@@ -108,7 +112,6 @@ typedef enum Opcode {
   OP_FREEZE,
   OP_EXIT,
 
-  OP_DIP,
   OP_LOOP,
   OP_WRITELINE,
   OP_LOADONCE,
@@ -147,7 +150,7 @@ typedef Byte*         Code;
 
 #define WORDSIZE sizeof(Word)
 
-#define FIRST_BYTECODE_OP OP_DIP
+#define FIRST_BYTECODE_OP OP_LOOP
 #define LAST_BYTECODE_OP OP_DEFMEM
 #define N_BYTECODE_OPS (LAST_BYTECODE_OP-FIRST_BYTECODE_OP+1)
 #define LAST_PARSEABLE_OP OP_DEFMEM

@@ -1,6 +1,7 @@
 #include "ono.h"
 #include "escapechars.h"
 #include "parser.h"
+#include "env.h"
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h> // for memcpy
@@ -56,15 +57,11 @@ Err parseSymbol(Seg* in, Seg* out) {
 
   // see if it is a built-in
 
-  for (int i=0;i <= LAST_PARSEABLE_OP;i++) {
-    const InstructionInfo* ii = &(opInfoTable[i]);
-    int nameLen = strlen(ii->name);
-    if (symbolSize == nameLen &&
-        strncmp((const char *)wordStart,ii->name,symbolSize) == 0) {
-      OUTPUT_CHECK(1);
-      emitByte(out,i & 0xff);
-      return ERR_OK;
-    }
+  int i = lookupPrim((char *)wordStart,symbolSize);
+  if (i >= 0) {
+    OUTPUT_CHECK(1);
+    emitByte(out,i & 0xff);
+    return ERR_OK;
   }
 
   // otherwise emit name call
@@ -154,11 +151,13 @@ Err parseStr(Seg* in, Seg* out) {
       if (++in->cursor >= in->end) break;
       c = *(in->cursor);
       if (c == 'x') {
-        if (++in->cursor >= in->end) break;
-        if (!isxdigit(*in->cursor)) return ERR_UNEXPECTED_CHARACTER;
-        Int x = consumeHexInt(in);
-        if (x > 255) return ERR_UNEXPECTED_CHARACTER;
-        c = (Byte)x;
+        in->cursor++;
+        if (in->cursor + 2 >= in->end) break;
+        if (!isxdigit(in->cursor[0]) || !isxdigit(in->cursor[1]))
+            return ERR_UNEXPECTED_CHARACTER;
+        c = (Byte)(digitInt(in->cursor[0])*16 + 
+                   digitInt(in->cursor[1]));
+        in->cursor += 2;
       } else {
         if (!escToChar(c,(char *)&c)) return ERR_UNEXPECTED_CHARACTER;
         in->cursor++;

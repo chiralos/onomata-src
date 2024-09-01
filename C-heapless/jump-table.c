@@ -13,7 +13,9 @@ extern void falseCode      (void);
 extern void andCode        (void);
 extern void orCode         (void);
 extern void notCode        (void);
+extern void chooseCode     (void);
 extern void ifeCode        (void);
+extern void dipCode        (void);
 extern void addCode        (void);
 extern void subCode        (void);
 extern void mulCode        (void);
@@ -39,6 +41,7 @@ extern void unpackCode     (void);
 extern void tupgetCode     (void);
 extern void tupsetCode     (void);
 extern void strCode        (void);
+extern void chrCode        (void);
 extern void strgetCode     (void);
 extern void strsetCode     (void);
 extern void parseintCode   (void);
@@ -72,7 +75,7 @@ extern void wordsizeCode   (void);
 
 extern void savefdCode     (void);
 extern void errstrCode     (void);
-extern void parseCode      (void);
+extern void parsePartCode  (void);
 extern void writestackCode (void);
 extern void isdefCode      (void);
 extern void undefCode      (void);
@@ -121,7 +124,9 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   orCode,         // OP_OR
   notCode,        // OP_NOT
 
+  chooseCode,     // OP_CHOOSE
   ifeCode,        // OP_IFE
+  dipCode,        // OP_DIP
 
   addCode,        // OP_ADD
   subCode,        // OP_SUB
@@ -145,6 +150,7 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
 
   lenCode,        // OP_LEN
   slcCode,        // OP_SLC
+  slcCode,        // OP_SBS
   brkCode,        // OP_BRK
 
   packCode,       // OP_PACK
@@ -153,6 +159,7 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   tupsetCode,     // OP_TUPSET
 
   strCode,        // OP_STR
+  chrCode,        // OP_CHR
   catCode,        // OP_STRCAT
   strgetCode,     // OP_STRGET
   strsetCode,     // OP_STRSET
@@ -190,7 +197,7 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
 
   savefdCode,     // OP_SAVEFD
   errstrCode,     // OP_ERRSTR
-  parseCode,      // OP_PARSE
+  parsePartCode,  // OP_PARSE
   writestackCode, // OP_WRITESTACK
   isdefCode,      // OP_ISDEF
   undefCode,      // OP_UNDEF
@@ -206,7 +213,6 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   freezeCode,     // OP_FREEZE
   exitCode,       // OP_EXIT
   
-  bytecodeCode,   // OP_DIP
   bytecodeCode,   // OP_LOOP
   bytecodeCode,   // OP_WRITELINE
   bytecodeCode,   // OP_LOADONCE

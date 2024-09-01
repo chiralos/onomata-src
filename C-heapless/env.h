@@ -13,6 +13,7 @@ Word* itemBase(Word *p);
 Word* indexDict(int n);
 void  lookup(Search* s, Buf* qName);
 int   dictSize(bool includeFrozen);
+int   lookupPrim(char* wordStart, Word wordLen);
 
 void unknownSymbol(char*s, int len, Err err);
 

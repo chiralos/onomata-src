@@ -93,10 +93,13 @@ top. Update operations put the value to be inserted in between.
 | loop         | A (A -> A Bool)    -> A            |
 | ife          | [2]                                |
 | add          | (Int) (Int)        -> (Int)        | [4]
-| sub          | (Int) (Int)        -> (Int)        |
-| mul          | (Int) (Int)        -> (Int)        |
-| div          | (Int) (Int)        -> (Int)        |
-| mod          | (Int) (Int)        -> (Int)        |
+| sub          | (Int) (Int)        -> (Int)        | [4]
+| mul          | (Int) (Int)        -> (Int)        | [4]
+| div          | (Int) (Int)        -> (Int)        | [4,16]]
+| mod          | (Int) (Int)        -> (Int)        | [4,16]]
+| divmod       | (Int) (Int)        -> (Int) (Int]  | [15,16]
+| abs          | (Int)              -> (Int)        | [15]
+| neg          | (Int)              -> (Int)        | [15]
 | bit/and      | (Int) (Int)        -> (Int)        | bitwise ops
 | bit/or       | (Int) (Int)        -> (Int)        |
 | bit/not      | (Int)              -> (Int)        |
@@ -110,16 +113,18 @@ top. Update operations put the value to be inserted in between.
 | gt           | (O) (O)            -> (Bool)       | (O Ord)
 | gte          | (O) (O)            -> (Bool)       | (O Ord)
 
-| pack         | ... (Int)          -> (Tup)        | [3] [10]
+| pack         | ... (Int)          -> (Tup)        | [3,10]
 | unpack       | (Tup)              -> ...          | [3]
 | tup/get      | (Tup) (Int)        -> (A)          | [10]
 | tup/set      | (Tup) (A) (Int)    -> (Tup)        | [10]
 
 | len          | (L)                -> (Int)        | (L Len)
-| slc          | (BS) (Int) (Int)   -> (BS)         | (BS ByteSrc)
-| brk          | (BS) (Int)         -> (BS)         | (BS ByteSrc)
+| slc          | (BS) (Int) (Int)   -> (BS)         | [14] bytes offset end
+| sbs          | (BS) (Int) (Int)   -> (BS)         | [14] bytes offset len
+| brk          | (BS) (Int)         -> (BS) (BS)    | [14]
 
 | str          | (S)                -> (Str)        | (S Stringform)
+| chr          | (Int)              -> (Str)        |
 | str/cat      | (Str) (Str)        -> (Str)        |
 | str/get      | (Str) (Int)        -> (Int)        | peek byte
 | str/set      | (Str) (Int) (Int)  -> (Str)        | with updated byte
@@ -171,6 +176,8 @@ top. Update operations put the value to be inserted in between.
 | avail        |                    -> (Int)        |
 | freeze       |                    ->              | optimise current defs
 
+(internal : errstr parse-part write-stack repl)
+
 ```
 
 [1] `pop dup swp quo cat run` are together Turing-complete.
@@ -182,11 +189,11 @@ items are not considered well typed. If you want your program to
 be compiled, restrict to arguments that easily statically resolve
 to constants.
 
-[4] Overflow or division by zero yields an undefined but valid number.
+[4] Overflow or out-of-range result yields an undefined but valid 
+    number. 
 
 [5] First arg is bits in integer, second argument is number of bits
-    to shift, positive is shift left, shift is logical (and result
-    interpreted as signed int.
+    to shift, positive is shift left, shift is arithmetic on signed.
 
 [6] Top result is number of bytes parsed; if zero second is undefined.
 
@@ -220,3 +227,9 @@ too hard I don't feel too back about including 'pack'.
      limited memory, no text editor, and/or cassette tape storage 
 you might actually have developed code with the interactive system
 and saved it. Cannot save frozen code.
+
+[14] (BS) items are ByteSource.
+
+[15] Not part of 'small interpeter' collection.
+
+[16] Divide by zero is undefined and should panic.

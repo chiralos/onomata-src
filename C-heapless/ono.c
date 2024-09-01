@@ -448,10 +448,17 @@ void notCode(void) {
 MATHOP(addCode,+)
 MATHOP(subCode,-)
 MATHOP(mulCode,*)
-MATHOP(divCode,/)
+
+void divCode(void) {
+  Int x = popInt();
+  if (x == 0) THROW(ERR_DIVIDE_BY_ZERO);
+  Int y = popInt();
+  pushInt(y / x);
+}
 
 void modCode(void) {
   Int x = popInt();
+  if (x == 0) THROW(ERR_DIVIDE_BY_ZERO);
   Int y = popInt();
   Int r = y % x;
   pushInt(r < 0 ? r + (x < 0 ? -x : x) : r);
@@ -462,9 +469,9 @@ MATHOP(bitorCode,|)
 MATHOP(bitxorCode,^)
 
 void bitshiftCode(void) {
-  Int  a = popInt();
-  Word x = (Word)popInt();
-  pushInt((Int)(a < 0 ? x >> -a : x << a));
+  Int a = popInt();
+  Int x = popInt();
+  pushInt(a < 0 ? x >> -a : x << a);
 }
 
 void bitnotCode(void) { pushInt(~popInt()); }
@@ -574,14 +581,24 @@ void tupsetCode(void) {
   env.sp[-1] += shuffleSize*WORDSIZE;
 }
 
+void chooseCode(void) {
+  popCode();
+  if (env.sp[1] == TAG_FALSE)
+    swpImpl(SWAP_MODE_SWP);
+  popCode();
+}
+
 void ifeCode(void) {
-  Word* b     = stack2();
-  Word* c     = next(b);
-  Word* p     = *c == TAG_TRUE ? b : env.sp;
-  Word codesz = p[-1];
-  Code code   = (Code)itemBase(p);
-  env.sp      = c - 1;
-  call(code,code+codesz,true);
+  swpImpl(SWAP_MODE_DIG);
+  chooseCode();
+  runCode();
+}
+
+void dipCode(void) {
+  swpImpl(SWAP_MODE_SWP);
+  quoCode();
+  catCode();
+  runCode(); 
 }
 
 void strCode(void) {
@@ -618,6 +635,15 @@ void strCode(void) {
   }
 }
 
+void chrCode(void) {
+  int n = popInt();
+  env.sp++;
+  Byte* a     = (Byte *)env.sp;
+  a[0]        = (Byte)n;
+  *(++env.sp) = 1;
+  *(++env.sp) = TAG_BYTES;
+}
+
 void lenCode(void) {
   int n = 0;
   switch(env.sp[0]) {
@@ -634,14 +660,17 @@ void lenCode(void) {
 }
 
 void slcCode(void) {
-  Int len = popInt();
+  Int len    = popInt();
   Int offset = popInt();
-  Tag tg = (Tag)env.sp[0];
-  Word bufLen = env.sp[-1];
   if (offset < 0) THROW(ERR_BAD_ARGUMENT);
+  Word bufLen = env.sp[-1];
+  if (*env.pc == OP_SLC)
+    if (len > offset)
+      len -= offset;
   if (len == -1)
     len = bufLen - offset;
-  if (offset + len > bufLen) THROW(ERR_ARRAY_BOUNDS);
+  if (len < 0 || offset + len > bufLen) THROW(ERR_ARRAY_BOUNDS);
+  Tag tg = (Tag)env.sp[0];
   if (tg == TAG_BUF) {
     env.sp[-1] = len;
     env.sp[-2] += offset;
@@ -752,7 +781,7 @@ static Word capAccumulatingProc(Seg* code, Code startCodeStart) {
   return newCodeSize;
 }
 
-void parseCode(void) {
+void parsePartCode(void) {
   Err err = ERR_OK;
   swpImpl(SWAP_MODE_SWP);
   Int n = popInt();
@@ -929,14 +958,25 @@ static char* errorStrings[] = {
   "unknown symbol",
   "io error",
   "already defined",
+  "divide by zero",
   "unknown error" };
 
 void printError(void) {
   char *s = errorStrings[env.err < ERR_UNKNOWN ? 
                          env.err : ERR_UNKNOWN];
   ioWrite(stdoutFD,s,strlen(s));
-  if (env.err == ERR_UNKNOWN_SYMBOL || 
-      env.err == ERR_ALREADY_DEFINED) {
+  if (env.err == ERR_TYPE_MISMATCH) {
+    if (env.pc[0] < LAST_BASIC_OP) {
+      const InstructionInfo* ii = &(opInfoTable[env.pc[0]]);
+      strncpy(env.errWord,ii->name,ERR_WORD_BUFSIZE);
+      env.errWord[ERR_WORD_BUFSIZE-1] = '\0';
+    } else {
+      env.err = ERR_UNKNOWN;
+    }
+  }
+  if (env.err == ERR_UNKNOWN_SYMBOL  || 
+      env.err == ERR_ALREADY_DEFINED ||
+      env.err == ERR_TYPE_MISMATCH) {
     writeChar(' ',stdoutFD);
     ioWrite(stdoutFD,env.errWord,strlen(env.errWord));
   }
@@ -1260,9 +1300,11 @@ void undefCode(void) {
 }
 
 void isdefCode(void) {
-  Word* def = findDef(false);
+  bool found = (findDef(false) != NULL);
+  if (!found) 
+    found = lookupPrim((char *)itemBase(env.sp),env.sp[-1]) >= 0;
   popCode();
-  *(++env.sp) = (def == NULL) ? TAG_FALSE : TAG_TRUE;
+  *(++env.sp) = found ? TAG_TRUE : TAG_FALSE;
 }
 
 void writeDefBody(Word *dp, int fd) {

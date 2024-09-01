@@ -13,7 +13,6 @@ typedef struct Def {
 // THIS MUST BE KEPT IN Opcode ORDER
 
 Def defs[] = {
-  { "dipBytecode", "swp quo cat run" },
   { "loopBytecode", "dup dip swp (loop) (pop) ife" },
   { "writeLineBytecode", 
     "\"\\n\" str/cat stdout swp write-str pop" },
@@ -37,7 +36,7 @@ Def defs[] = {
       "  ife"
       ") (true) ife"
       "( dup 2 tup/get swp dup 1 tup/get swp "
-      "  (parse) dip swp dup 1 lt"
+      "  (parse-part) dip swp dup 1 lt"
       "  ( pop swp 1 tup/set swp dup (2 tup/set) dip"
       "    1 eq (swp dip () swp) () ife true)"
       "  ((pop pop) dip errstr write-line false)" // see [1]
@@ -50,7 +49,7 @@ Def defs[] = {
       ") (false) ife"
       "(load-fd) (pop pop) ife" },
   { "loadstrBytecode",
-      "-1 swp 1 3 pack () swp load-fd" },
+      "str -1 swp 1 3 pack () swp load-fd" },
   { "saveBytecode",
       "write-only trunc bit/or creat bit/or open "
       "dup 0 lt"
