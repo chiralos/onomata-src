@@ -84,7 +84,6 @@ typedef enum Opcode {
   OP_SEEK,
   OP_READSTR,
   OP_WRITESTR,
-  OP_SETRAW,
   OP_SEEKSET,
   OP_SEEKCUR,
   OP_SEEKEND,
@@ -94,6 +93,9 @@ typedef enum Opcode {
   OP_TRUNC,
   OP_CREAT,
   OP_NONBLOCK,
+
+  OP_TERMCLS,
+  OP_TERMCURSORTO,
 
   OP_AVAIL,
   OP_WORDSIZE,

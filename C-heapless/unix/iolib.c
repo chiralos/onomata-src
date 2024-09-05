@@ -3,6 +3,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
+#include <stdio.h> // for snprintf
+#include <string.h> // for strlen
 
 void sleepmilliCode(void) {
   Int dt = popInt();
@@ -79,6 +81,33 @@ void writestrCode(void) {
   b[-1]    = r; // NOTE convert to onomata IO error code
 }
 
+void termclsCode(void) {
+  int fd = popInt();
+  pushInt(ioWrite(fd,"\x1b[1J",4));
+}
+
+void termcursortoCode(void) {
+  int y  = popInt();
+  int x  = popInt();
+  int fd = popInt();
+  if (y < 0 || x < 0) {
+    popCode(); pushInt(-1);
+  } else {
+    char buf[64];
+    snprintf(buf,64,"\x1b[%d;%dH",y+1,x+1);
+    pushInt(ioWrite(fd,buf,strlen(buf)));
+  }
+}
+
+////////
+// Notes
+/*
+[1] We know there is space for the null-termnating
+    byte because we just popped an int.
+
+[2] What we actually want is a generalised set-fd-config, 
+    get-fd-config, has-fd-config
+
 void setrawCode(void) {
   bool set = env.sp[0] == TAG_TRUE;
   env.sp--;
@@ -92,9 +121,6 @@ void setrawCode(void) {
   pushInt(r);
 }
 
-////////
-// Notes
-/*
-  [1] We know there is space for the null-termnating
-      byte because we just popped an int.
+[3] Should use terminfo or similar to see what ANSI terminal
+    support we have.
 */

@@ -1,0 +1,8 @@
+"out" (stdout swp write-str pop) def
+
+"cls" (stdout term/cls pop) def
+
+"cursor-to" ( # (x y ->)
+  stdout bry term/cursor-to pop
+) def
+

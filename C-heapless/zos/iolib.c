@@ -5,6 +5,7 @@
 #include <zos_time.h>
 #include <zos_vfs.h>
 #include <zos_keyboard.h>
+#include <zos_video.h>
 
 void sleepmilliCode(void) {
   Int dt = popInt();
@@ -118,6 +119,29 @@ void writestrCode(void) {
   b[-1] = (Int) err; // NOTE convert to std err code
 }
 
+void termclsCode(void) {
+  int fd = popInt(); // see [2]
+  pushInt(ioctl(fd,CMD_CLEAR_SCREEN,0));
+}
+
+void termcursortoCode(void) {
+  int y  = popInt();
+  int x  = popInt();
+  int fd = popInt();
+  if (y < 0 || x < 0) {
+    popCode(); pushInt(-1);
+  } else {
+    pushInt(ioctl(fd,CMD_SET_CURSOR_XY,
+      (x << 8) | (y & 0xff)));
+  }
+}
+
+////////   
+// Notes
+/*
+[1] What we actually want is a generalised set-fd-config, 
+    get-fd-config, has-fd-config .
+
 void setrawCode(void) {
   bool set = env.sp[0] == TAG_TRUE;
   env.sp--;
@@ -127,8 +151,7 @@ void setrawCode(void) {
   pushInt(r);
 }
 
-////////
-// Notes
-/*
+[2] Need some way of finding out if the output is VID0. 
+    Or if it is a serial device, we could output ANSI ESC codes.
 
 */

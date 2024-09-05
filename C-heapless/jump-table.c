@@ -60,7 +60,6 @@ extern void closeCode          (void);
 extern void seekCode           (void);
 extern void readstrCode        (void);
 extern void writestrCode       (void);
-extern void setrawCode         (void);
 extern void seeksetCode        (void);
 extern void seekcurCode        (void);
 extern void seekendCode        (void);
@@ -70,6 +69,9 @@ extern void rdwrCode           (void);
 extern void truncCode          (void);
 extern void creatCode          (void);
 extern void nonblockCode       (void);
+
+extern void termclsCode        (void);
+extern void termcursortoCode   (void);
 
 extern void availCode          (void);
 extern void wordsizeCode       (void);
@@ -183,7 +185,6 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   seekCode,           // OP_SEEK
   readstrCode,        // OP_READSTR
   writestrCode,       // OP_WRITESTR
-  setrawCode,         // OP_SETRAW
   seeksetCode,        // OP_SEEKSET
   seekcurCode,        // OP_SEEKCUR
   seekendCode,        // OP_SEEKEND
@@ -193,6 +194,9 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   truncCode,          // OP_TRUNC
   creatCode,          // OP_CREAT
   nonblockCode,       // OP_NONBLOCK
+
+  termclsCode,        // OP_TERMCLR
+  termcursortoCode,   // OP_TERMCURSORTO
 
   availCode,          // OP_AVAIL
   wordsizeCode,       // OP_WORDSIZE

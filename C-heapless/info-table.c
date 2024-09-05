@@ -93,7 +93,6 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "seek",             "nnn" }, // OP_SEEK
   { "read-str",         "nn"  }, // OP_READSTR
   { "write-str",        "sn"  }, // OP_WRITESTR
-  { "set-raw",          "bn"  }, // OP_SETRAW
   { "seek-set",         ""    }, // OP_SEEKSET
   { "seek-cur",         ""    }, // OP_SEEKCUR
   { "seek-end",         ""    }, // OP_SEEKEND
@@ -103,6 +102,9 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "trunc",            ""    }, // OP_TRUNC
   { "creat",            ""    }, // OP_CREAT
   { "nonblocking",      ""    }, // OP_NONBLOCKING
+
+  { "term/cls",         "n"   }, // OP_TERMCLS
+  { "term/cursor-to",   "nnn" }, // OP_TERMCURSORTO
 
   { "avail",            ""    }, // OP_AVAIL
   { "wordsize",         ""    }, // OP_WORDSIZE

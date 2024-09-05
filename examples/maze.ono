@@ -1,6 +1,7 @@
-"vars.ono" load-once
-"prng.ono" load-once
-"lib.ono"  load-once
+"vars.ono"     load-once
+"prng.ono"     load-once
+"lib.ono"      load-once
+"terminal.ono" load-once
 
 ## state setup ##
 
@@ -28,8 +29,16 @@
   bry pop pop
 ) def
 
+"set-cell-screen-update" ( # (c x y ->)
+  # pop pop pop
+  cursor-to 
+  cell2ascii out
+) def
+
 "set-cell" ( # (c x y ->)
+  3 pack dup unpack
   xy2i a bry poke
+  unpack set-cell-screen-update
 ) def
 
 # cell encoding:
@@ -77,8 +86,10 @@
 ) def
 
 "maze-init" (
+  cls
+
   # initialise cells
-  0 (dup a wall dig poke 1 add) m n mul repeat pop
+  0 (dup i2xy wall bry set-cell 1 add) m n mul repeat pop
 
   # set spine start
 
@@ -89,7 +100,7 @@
 
   maze-step
   make-exit
-  readout
+  "\n" out
 ) def
 
 ## maze algorithm ##
