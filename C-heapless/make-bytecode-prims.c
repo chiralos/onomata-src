@@ -57,7 +57,8 @@ Def defs[] = {
       "(dup (save-fd) dip close pop)"
       "ife" },
   { "replBytecode",
-      "( stdout \"ono> \" write-str pop"
+      "( stdin term/reset pop"
+      "  stdout \"ono> \" write-str pop"
       "  stdin 96 read-str 1 lt (pop false) (true) ife"
       "  (load-str write-stack true) (false) ife"
       ") loop" },

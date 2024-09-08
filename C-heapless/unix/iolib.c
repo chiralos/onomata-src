@@ -5,6 +5,7 @@
 #include <termios.h>
 #include <stdio.h> // for snprintf
 #include <string.h> // for strlen
+#include <fcntl.h>
 
 void sleepmilliCode(void) {
   Int dt = popInt();
@@ -99,28 +100,35 @@ void termcursortoCode(void) {
   }
 }
 
-////////
-// Notes
-/*
-[1] We know there is space for the null-termnating
-    byte because we just popped an int.
-
-[2] What we actually want is a generalised set-fd-config, 
-    get-fd-config, has-fd-config
-
-void setrawCode(void) {
-  bool set = env.sp[0] == TAG_TRUE;
-  env.sp--;
+void termmodeCode(void) {
   int fd = popInt();
-  struct termios attr;
-  tcgetattr(fd, &attr);
-  attr.c_lflag &= ~(ICANON | ECHO);
-  if (!set)
-    attr.c_lflag |= (ICANON | ECHO);
-  int r = tcsetattr(fd, TCSANOW, &attr);
+  int r = 0;
+  if (!isatty(fd)) {
+    r = -1; // see [1]
+  } else {
+    Byte op = env.pc[0];
+    struct termios attr;
+    tcgetattr(fd, &attr);
+    attr.c_lflag &= ~(ICANON | ECHO);
+    if (op == OP_TERMRESET)
+      attr.c_lflag |= (ICANON | ECHO);
+    r = tcsetattr(fd, TCSANOW, &attr);
+
+    if (op == OP_TERMRAWNONBLOCKING || op == OP_TERMRESET) {
+      int flstate = fcntl(fd,F_GETFL,0);
+      flstate &= ~O_NONBLOCK;
+      if (op == OP_TERMRAWNONBLOCKING)
+        flstate = flstate | O_NONBLOCK;
+      int r2 = fcntl(fd,F_SETFL,flstate);
+      if (r == 0) r = r2;
+    }
+  }
   pushInt(r);
 }
 
-[3] Should use terminfo or similar to see what ANSI terminal
-    support we have.
+////////
+// Notes
+/*
+[1] We should probably try to do better than this.
+    byte because we just popped an int.
 */

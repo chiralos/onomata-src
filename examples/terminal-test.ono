@@ -1,0 +1,38 @@
+"terminal.ono" load-once
+
+"raw-test" (
+  "press q to escape\n" out
+  set-raw
+  ( stdin 1 read-str pop
+    dup len 0 gt
+    ( dup 0 str/get str " " str/cat stdout swp 
+      write-str pop
+      "q" neq
+    ) (false) ife
+  ) loop
+  stdin term/reset pop
+  nl
+) def
+
+"nonblocking-test" (
+  "press q to escape\n" out
+  set-nonblocking
+  100
+  ( 1 sub dup 0 lte
+    ( stdout "." write-str pop
+      pop 100)
+    () ife
+    stdin 1 read-str pop
+    dup len 0 gt
+    ( dup 
+      dup 0 str/get 128 lte
+      (stdout swp write-str pop)
+      (pop)
+      ife
+      "q" neq
+    ) (pop true) ife
+  ) loop
+  pop
+  stdin term/reset pop
+  nl
+) def

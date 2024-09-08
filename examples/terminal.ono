@@ -1,4 +1,5 @@
 "out" (stdout swp write-str pop) def
+"nl"  ("\n" out) def
 
 "cls" (stdout term/cls pop) def
 
@@ -6,3 +7,6 @@
   stdout bry term/cursor-to pop
 ) def
 
+"set-raw" (stdin term/raw pop) def
+"set-nonblocking" (stdin term/raw-nonblocking pop) def
+"reset-term" (stdin term/reset pop) def

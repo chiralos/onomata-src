@@ -132,26 +132,37 @@ void termcursortoCode(void) {
     popCode(); pushInt(-1);
   } else {
     pushInt(ioctl(fd,CMD_SET_CURSOR_XY,
-      (x << 8) | (y & 0xff)));
+      (void *)((x << 8) | (y & 0xff))));
   }
+}
+
+void termmodeCode(void) {
+  int fd = popInt(); // see [1]
+  int r = 0;
+  Word x = 0;
+  switch (env.pc[0]) {
+    case OP_TERMRAW:
+      x = KB_MODE_RAW;
+      break;
+    case OP_TERMRAWNONBLOCKING:
+      x = KB_MODE_RAW | KB_READ_NON_BLOCK;
+      break;
+    case OP_TERMRESET:
+      x = KB_MODE_COOKED | KB_READ_BLOCK;
+      break;
+  }
+  pushInt(ioctl(fd,KB_CMD_SET_MODE,(void *)x));
 }
 
 ////////   
 // Notes
 /*
-[1] What we actually want is a generalised set-fd-config, 
-    get-fd-config, has-fd-config .
+[1] As far as I know there is no way to know if a fd is
+    connected to a particular device. We just trust the
+user only calls this on the keyboard device. We could check
+that the fd is stdin, but that fails if the keyboad fd is
+cloned or stdin is not connected to the keyboard.
 
-void setrawCode(void) {
-  bool set = env.sp[0] == TAG_TRUE;
-  env.sp--;
-  int fd = popInt();
-  int r = ioctl(fd,KB_CMD_SET_MODE,
-                   set ? KB_MODE_RAW : KB_MODE_COOKED);
-  pushInt(r);
-}
-
-[2] Need some way of finding out if the output is VID0. 
-    Or if it is a serial device, we could output ANSI ESC codes.
-
+Also, here is no KB_CMD_GET_MODE, so we can't separately
+control raw/cooked and nonblocking.
 */

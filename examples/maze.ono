@@ -19,13 +19,13 @@
 "i2xy" (dup m mod swp m div) def
 
 "get-cell" ( # (x y -> c)
-  cond
-  (dup 0 lt)   (space) case
-  (dup n gte)  (space) case
-  (1 up 0 lt)  (space) case
-  (1 up m gte) (space) case
-  (true)       (dup-2 xy2i a swp peek) case
-  end-cond
+  # a 'cond' version is significantly slower with
+  # the heapless interpreter
+          dup 0 lt   (space true) (false) ife
+  (true) (dup n gte  (space true) (false) ife) ife
+  (true) (1 up 0 lt  (space true) (false) ife) ife
+  (true) (1 up m gte (space true) (false) ife) ife
+  ()     (dup-2 xy2i a swp peek)               ife
   bry pop pop
 ) def
 
