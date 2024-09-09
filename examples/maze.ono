@@ -32,7 +32,7 @@
 "set-cell-screen-update" ( # (c x y ->)
   # pop pop pop
   cursor-to 
-  cell2ascii out
+  cell2ascii stdout swp write pop
 ) def
 
 "set-cell" ( # (c x y ->)
@@ -58,11 +58,11 @@
 
 "readout-line" ( # (n ->)
   m mul # starting position
-  ( dup i2xy get-cell cell2ascii stdout swp write-str pop
+  ( dup i2xy get-cell cell2ascii stdout swp write pop
     1 add
   ) m repeat
   pop
-  stdout "\n" write-str pop
+  nl
 ) def
 
 "readout" (
@@ -81,7 +81,7 @@
   (true)       ("" "" false)           case
   end-cond
   ( " too " swp str/cat str/cat "\n" str/cat 
-    stdout swp write-str pop)
+    stdout swp write pop)
   ( pop pop maze-init) ife
 ) def
 
@@ -100,7 +100,7 @@
 
   maze-step
   make-exit
-  "\n" out
+  nl
 ) def
 
 ## maze algorithm ##
@@ -184,7 +184,7 @@
 ## banner ##
 
 "help" (
-  stdout "usage: WIDTH HEIGHT maze\n" write-str pop
+  stdout "usage: WIDTH HEIGHT maze\n" write pop
 ) def
 
 help

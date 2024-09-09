@@ -6,6 +6,8 @@
 
 ## Language
 
+*NOTE: version 0.1 : everything here is subject to breaking change*
+
 Onomata is set of standard words for a concatenative programming
 language, along with a trivial syntax and semantics for programs
 (expressions).
@@ -89,9 +91,10 @@ top. Update operations put the value to be inserted in between.
 | not          | (Bool)             -> (Bool)       |
 | and          | (Bool) (Bool)      -> (Bool)       |
 | or           | (Bool) (Bool)      -> (Bool)       |
+| choose       | (A) (A) Bool       -> (A)          |
+| ife          | [2]                                |
 | dip          | A (B) (A -> C)     -> C (B)        |
 | loop         | A (A -> A Bool)    -> A            |
-| ife          | [2]                                |
 | add          | (Int) (Int)        -> (Int)        | [4]
 | sub          | (Int) (Int)        -> (Int)        | [4]
 | mul          | (Int) (Int)        -> (Int)        | [4]
@@ -113,15 +116,15 @@ top. Update operations put the value to be inserted in between.
 | gt           | (O) (O)            -> (Bool)       | (O Ord)
 | gte          | (O) (O)            -> (Bool)       | (O Ord)
 
-| pack         | ... (Int)          -> (Tup)        | [3,10]
-| unpack       | (Tup)              -> ...          | [3]
-| tup/get      | (Tup) (Int)        -> (A)          | [10]
-| tup/set      | (Tup) (A) (Int)    -> (Tup)        | [10]
-
 | len          | (L)                -> (Int)        | (L Len)
 | slc          | (BS) (Int) (Int)   -> (BS)         | [14] bytes offset end
 | sbs          | (BS) (Int) (Int)   -> (BS)         | [14] bytes offset len
 | brk          | (BS) (Int)         -> (BS) (BS)    | [14]
+
+| pack         | ... (Int)          -> (Tup)        | [3,10]
+| unpack       | (Tup)              -> ...          | [3]
+| tup/get      | (Tup) (Int)        -> (A)          | [10]
+| tup/set      | (Tup) (A) (Int)    -> (Tup)        | [10]
 
 | str          | (S)                -> (Str)        | (S Stringform)
 | chr          | (Int)              -> (Str)        |
@@ -145,9 +148,9 @@ top. Update operations put the value to be inserted in between.
 | open         | (Str) (Int)        -> (Int)        | name flags -> err
 | close        | (Int)              -> (Int)        | fd -> err
 | seek         | (Int) (Int) (Int)  -> (Int)        | fd ofs whence -> pos
-| read-str     | (Int) (Int)        -> (Str) (Int)  | fd len -> str err
-| write-str    | (Int) (Str)        -> (Int)        | fd str -> err
-| set-raw      | (Int) (Bool)       -> (Int)        | fd on/off -> err [17]
+| read-str     | (Int) (Int)        -> (Str) (Int)  | fd len -> str err/len
+| read         | (Int) (Buf)        -> (Int)        | fd buf -> err/len
+| write        | (Int) (BS)         -> (Int)        | fd str -> err/len
 | seek-set     |                    -> (Int)        |
 | seek-cur     |                    -> (Int)        |
 | seek-end     |                    -> (Int)        |
@@ -157,6 +160,12 @@ top. Update operations put the value to be inserted in between.
 | trunc        |                    -> (Int)        |
 | creat        |                    -> (Int)        |
 | nonblocking  |                    -> (Int)        |
+
+| term/cls       | (Int)            ->              |
+| term/cursor-to | (Int) (Int) (Int) ->             | fd x y ->
+| term/raw             | (Int)      -> (Int)        | fd -> err
+| term/raw-nonblocking | (Int)      -> (Int)        | fd -> err
+| term/reset   i       | (Int)      -> (Int)        | fd -> err
 
 | wordsize     |                    -> (Int)        | in bytes
 | exit         |                                    | [8]

@@ -70,16 +70,26 @@ void readstrCode(void) {
   pushInt(r);
 }
 
-void writestrCode(void) {
-  void* buf;
-  size_t len;
+void readCode(void) {
+  Word  len = env.sp[-1];
+  char* buf = (char *)(env.sp[-2]);
+  popCode();
+  Int fd  = popInt();
+  pushInt(read(fd,buf,len));
+}
+
+void writeCode(void) {
   Word* b  = stack2();
-  buf = (void *)itemBase(env.sp);
-  len = env.sp[-1];
-  Int fd   = b[-1];
-  Int r    = write(fd,buf,len);
-  env.sp   = b;
-  b[-1]    = r; // NOTE convert to onomata IO error code
+  void* buf;
+  size_t len = env.sp[-1];
+  if (env.sp[0] == TAG_BYTES)
+    buf = (void *)itemBase(env.sp);
+  else
+    buf = (void *)(env.sp[-2]);
+  Int fd = b[-1];
+  Int r  = write(fd,buf,len);
+  env.sp = b;
+  b[-1]  = r; // NOTE convert to onomata IO error code
 }
 
 void termclsCode(void) {

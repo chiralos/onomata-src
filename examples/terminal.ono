@@ -1,5 +1,4 @@
-"out" (stdout swp write-str pop) def
-"nl"  ("\n" out) def
+"nl"  (stdout "\n" write pop) def
 
 "cls" (stdout term/cls pop) def
 

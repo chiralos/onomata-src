@@ -92,7 +92,8 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "close",                "n"   }, // OP_CLOSE
   { "seek",                 "nnn" }, // OP_SEEK
   { "read-str",             "nn"  }, // OP_READSTR
-  { "write-str",            "sn"  }, // OP_WRITESTR
+  { "read",                 "pn"  }, // OP_READ
+  { "write",                "mn"  }, // OP_WRITE
   { "seek-set",             ""    }, // OP_SEEKSET
   { "seek-cur",             ""    }, // OP_SEEKCUR
   { "seek-end",             ""    }, // OP_SEEKEND

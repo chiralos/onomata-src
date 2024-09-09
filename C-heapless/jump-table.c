@@ -59,7 +59,8 @@ extern void openCode               (void);
 extern void closeCode              (void);
 extern void seekCode               (void);
 extern void readstrCode            (void);
-extern void writestrCode           (void);
+extern void readCode               (void);
+extern void writeCode              (void);
 extern void seeksetCode            (void);
 extern void seekcurCode            (void);
 extern void seekendCode            (void);
@@ -185,7 +186,8 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   closeCode,              // OP_CLOSE
   seekCode,               // OP_SEEK
   readstrCode,            // OP_READSTR
-  writestrCode,           // OP_WRITESTR
+  readCode,               // OP_READ
+  writeCode,              // OP_WRITE
   seeksetCode,            // OP_SEEKSET
   seekcurCode,            // OP_SEEKCUR
   seekendCode,            // OP_SEEKEND

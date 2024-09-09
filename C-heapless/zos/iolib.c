@@ -96,7 +96,7 @@ void readstrCode(void) {
   Int r = 0;
   if (err != ERR_SUCCESS) {
     *(++env.sp) = 0;
-    r = err;
+    r = -err;
   } else {
     Word sz = alignedSize(len);
     env.sp += sz;
@@ -107,16 +107,28 @@ void readstrCode(void) {
   pushInt(r);
 }
 
-void writestrCode(void) {
+void readCode(void) {
+  Word  len = env.sp[-1];
+  char* buf = (char *)(env.sp[-2]);
+  popCode();
+  Int fd  = popInt();
+  zos_err_t err = longIO(true,fd,buf,&len);
+  pushInt(err == ERR_SUCCESS ? len : -err);
+}
+
+void writeCode(void) {
+  Word* b = stack2();
   void* buf;
   Word len;
-  Word* b  = stack2();
-  buf = (void *)itemBase(env.sp);
   len = env.sp[-1];
-  Int fd   = b[-1];
+  if (env.sp[0] == TAG_BYTES)
+    buf = (void *)itemBase(env.sp);
+  else
+    buf = (void *)(env.sp[-2]);
+  Int fd = b[-1];
   zos_err_t err = longIO(false,fd,buf,&len);
   env.sp = b;
-  b[-1] = (Int) err; // NOTE convert to std err code
+  b[-1] = (err == ERR_SUCCESS ? len : -err); 
 }
 
 void termclsCode(void) {

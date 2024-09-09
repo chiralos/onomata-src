@@ -965,7 +965,8 @@ void printError(void) {
   char *s = errorStrings[env.err < ERR_UNKNOWN ? 
                          env.err : ERR_UNKNOWN];
   ioWrite(stdoutFD,s,strlen(s));
-  if (env.err == ERR_TYPE_MISMATCH) {
+  if (env.err == ERR_TYPE_MISMATCH ||
+      env.err == ERR_STACK_UNDERFLOW) {
     if (env.pc[0] < LAST_BASIC_OP) {
       const InstructionInfo* ii = &(opInfoTable[env.pc[0]]);
       strncpy(env.errWord,ii->name,ERR_WORD_BUFSIZE);
@@ -976,7 +977,8 @@ void printError(void) {
   }
   if (env.err == ERR_UNKNOWN_SYMBOL  || 
       env.err == ERR_ALREADY_DEFINED ||
-      env.err == ERR_TYPE_MISMATCH) {
+      env.err == ERR_TYPE_MISMATCH   ||
+      env.err == ERR_STACK_UNDERFLOW) {
     writeChar(' ',stdoutFD);
     ioWrite(stdoutFD,env.errWord,strlen(env.errWord));
   }

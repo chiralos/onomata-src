@@ -6,7 +6,7 @@
   ( stdin 1 read-str pop
     dup len 0 gt
     ( dup 0 str/get str " " str/cat stdout swp 
-      write-str pop
+      write pop
       "q" neq
     ) (false) ife
   ) loop
@@ -19,14 +19,14 @@
   set-nonblocking
   100
   ( 1 sub dup 0 lte
-    ( stdout "." write-str pop
+    ( stdout "." write pop
       pop 100)
     () ife
     stdin 1 read-str pop
     dup len 0 gt
     ( dup 
       dup 0 str/get 128 lte
-      (stdout swp write-str pop)
+      (stdout swp write pop)
       (pop)
       ife
       "q" neq

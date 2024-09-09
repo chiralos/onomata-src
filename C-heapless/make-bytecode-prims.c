@@ -15,7 +15,7 @@ typedef struct Def {
 Def defs[] = {
   { "loopBytecode", "dup dip swp (loop) (pop) ife" },
   { "writeLineBytecode", 
-    "\"\\n\" str/cat stdout swp write-str pop" },
+    "\"\\n\" str/cat stdout swp write pop" },
   { "loadonceBytecode",
     "dup \"-loaded\" str/cat dup is-defined"
     "(pop pop) ((true) def load) ife" },
@@ -58,7 +58,7 @@ Def defs[] = {
       "ife" },
   { "replBytecode",
       "( stdin term/reset pop"
-      "  stdout \"ono> \" write-str pop"
+      "  stdout \"ono> \" write pop"
       "  stdin 96 read-str 1 lt (pop false) (true) ife"
       "  (load-str write-stack true) (false) ife"
       ") loop" },
