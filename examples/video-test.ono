@@ -1,0 +1,23 @@
+"video.ono" load-once
+"vars.ono" load-once
+
+"buffer" 4096 def-mem
+"tile-buf" buffer 0 256 sbs quo def
+
+"test" (
+  tile-buf "\x09" fill
+  vid-mem-tile tile-buf to-physical
+
+  tile-buf "\x0b" fill
+  vid-mem-tile 0x0100 add tile-buf to-physical
+
+  io-ctrl-vid-mode vid-mode-gfx-640-8bit z80/out
+
+  buffer 0 3200 sbs
+  dup "\x00\x01\x00" fill
+  vid-mem-layer0 dig to-physical
+
+  5000 sleep-milli
+  
+  io-ctrl-vid-mode vid-mode-text-640 z80/out
+)  def

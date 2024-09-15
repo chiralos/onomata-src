@@ -19,8 +19,9 @@ extern void dipCode                (void);
 extern void addCode                (void);
 extern void subCode                (void);
 extern void mulCode                (void);
-extern void divCode                (void);
-extern void modCode                (void);
+extern void divmodCode             (void);
+extern void absCode                (void);
+extern void negCode                (void);
 extern void bitandCode             (void);
 extern void bitorCode              (void);
 extern void bitnotCode             (void);
@@ -46,7 +47,7 @@ extern void strgetCode             (void);
 extern void strsetCode             (void);
 extern void parseintCode           (void);
 
-extern void overwriteCode          (void);
+extern void cpyCode                (void);
 extern void peekpokeCode           (void);
 
 extern void allocstaticCode        (void);
@@ -93,6 +94,8 @@ extern void defCode                (void);
 extern void freezeCode             (void);
 extern void exitCode               (void);
 
+#include "target-jumptable-protos.h"
+
 extern void bytecodeCode           (void);
 
 extern void stoCode                (void);
@@ -136,8 +139,11 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   addCode,                // OP_ADD
   subCode,                // OP_SUB
   mulCode,                // OP_SUB
-  divCode,                // OP_DIV
-  modCode,                // OP_MOD
+  divmodCode,             // OP_DIV
+  divmodCode,             // OP_MOD
+  divmodCode,             // OP_DIVMOD
+  absCode,                // OP_ABS
+  negCode,                // OP_NEG
 
   bitandCode,             // OP_BITAND
   bitorCode,              // OP_BITOR
@@ -170,7 +176,8 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   strsetCode,             // OP_STRSET
   parseintCode,           // OP_PARSEINT
 
-  overwriteCode,          // OP_OVERWRITE
+  cpyCode,                // OP_CPY
+  cpyCode,                // OP_FILL
   peekpokeCode,           // OP_PEEK
   peekpokeCode,           // OP_POKE
   peekpokeCode,           // OP_PEEKINT
@@ -225,6 +232,8 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   freezeCode,             // OP_FREEZE
   exitCode,               // OP_EXIT
   
+#include "target-jumptable.h"
+
   bytecodeCode,           // OP_LOOP
   bytecodeCode,           // OP_WRITELINE
   bytecodeCode,           // OP_LOADONCE

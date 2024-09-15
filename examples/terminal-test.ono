@@ -1,12 +1,13 @@
 "terminal.ono" load-once
 
+"out" (stdout swp write pop) def
+
 "raw-test" (
   "press q to escape\n" out
   set-raw
   ( stdin 1 read-str pop
     dup len 0 gt
-    ( dup 0 str/get str " " str/cat stdout swp 
-      write pop
+    ( dup 0 str/get str " " str/cat out
       "q" neq
     ) (false) ife
   ) loop
@@ -26,7 +27,7 @@
     dup len 0 gt
     ( dup 
       dup 0 str/get 128 lte
-      (stdout swp write pop)
+      (out)
       (pop)
       ife
       "q" neq

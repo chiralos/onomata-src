@@ -1,0 +1,29 @@
+"vars.ono" load-once
+
+# IO port
+
+"vid-io-mapper"               (0x80) def
+"io-mapper-bank" vid-io-mapper 0xE   add quo def
+
+"vid-io-ctrl-stat"                 (0x90) def
+"io-ctrl-vid-mode" vid-io-ctrl-stat 0xC   add quo def
+
+"vid-mode-text-640"     (0) def
+"vid-mode-text-320"     (1) def
+"vid-mode-gfx-640-8bit" (4) def
+"vid-mode-gfx-320-8bit" (5) def
+"vid-mode-gfx-640-4bit" (6) def
+"vid-mode-gfx-320-4bit" (7) def
+
+# video memory
+
+"vid-mem-base"      (0x10) def
+"vid-mem-tile-base" (0x11) def
+
+"vid-mem-layer0"  (vid-mem-base 0)      def
+"vid-mem-palette" (vid-mem-base 0xE00)  def
+"vid-mem-layer1"  (vid-mem-base 0x1000) def
+"vid-mem-sprite"  (vid-mem-base 0x2800) def
+"vid-mem-font"    (vid-mem-base 0x3000) def
+"vid-mem-tile"    (vid-mem-tile-base 0) def
+

@@ -1,13 +1,13 @@
 # A heapless Onomata interpreter in C
 
-August 2024
+September 2024
 
 ## Targets
 
-### Zeal 8-Bit OS target
+### Zeal 8-Bit OS Target
 
-Cross-compiled from Unix. Has been known to build from MacOS
-and WSL Ubuntu.
+Cross-compiled from Unix. Has been known to build from MacOS and
+WSL Ubuntu.
 
 Requires SDCC (Small Device C Compiler), and Zeal 8-Bit-OS repo for
 headers.
@@ -19,6 +19,21 @@ Look at `C-heapless/zos/Makefile`. Need to set up `ZOS_PATH` and `SDCC_BASE`.
 
 Generates `onoi` which is a standard ZOS binary. Has been
 tested on the Zeal 8-bit emulator and (occasionally) hardware.
+
+The repo "zos" directory may contain a compiled binary.
+
+Host-specific words:
+
+```
+
+| Name         | Type              |  Notes
+|--------------|-------------------|----------------------
+| z80/in       | Int        -> Int | port -> byte
+| z80/out      | Int Int    ->     | port byte ->
+|              |                   | 
+| to-physical  | Int Int Bs ->     | high8 low16 data ->
+
+```
 
 ### Generic Unix target
 
@@ -42,7 +57,7 @@ the BASIC environments provided by 8-bit computers of the 1970s and
 80s. But with first-class functions. So ideally:
 
   * Compact.  The Zeal 8-Bit OS Z80 binary (compiled with SDCC) weighs 
-    in at about 22KB which I consider a failure. 
+    in at about 23KB which I consider a failure. 
     
     The [Jupiter Ace](https://en.wikipedia.org/wiki/Jupiter_Ace) had a 
     Forth system, floating-point library, and all hardware support 
@@ -53,22 +68,22 @@ the BASIC environments provided by 8-bit computers of the 1970s and
     I would start from something better than this.
 
   * Have a read-eval-print loop that allows definitions to be 
-    added, removed, listed, inspected, saved, and loaded.
+    loaded, saved, added, removed, listed, and inspected.
 
   * Show stack contents.
 
   * At least some error messages: syntax errors, type mismatches, 
     bounds violations, undefined symbols, out-of-memory.
 
-  * Uncrashable under ordinary usage. Not achived: there is
-    C-stack recursion in the printing and optimising code that is
+  * Uncrashable under ordinary usage. Not quite achieved: there is
+    C-stack recursion in the printing and optimisation code that is
     unchecked, so you can probably crash it with deep enough 
     procedure nesting.
 
 ## Architecture
 
 How can you implement first-class functions and dynamic strings
-without a heap ? Memcpy. Lots of memcpy.
+in a memory-safe environment without a heap ? Memcpy. Lots of memcpy.
 
 The system works in a single block of RAM, with an upward growing
 dictionary and argument stack, and a downward growing return stack,
@@ -95,14 +110,15 @@ never causes shuffling.
 You could get around that by tracking which code can never cause a
 shuffle and avoiding the copy. Or by restricting shuffling operations
 to special top-level directives. But I'd rather move on to a host
-with a proper heap and compare the performance and memory usage of
-this to that.
+with a proper heap. Might be intersting to compare the performance 
+and memory usage of this to that, both on a modern CPU and the
+Z80.
 
 ### Optimisation
 
-The `freeze` word takes all the currently unfrozen definitions, compiles
-them a bit, and freezes them iin place. Frozen code seems to run about three
-times faster.
+The `freeze` word takes all the currently unfrozen definitions,
+compiles them a bit, and freezes them iin place. Frozen code is
+still bytecode, but seems to run about three times faster.
 
 It does a tiny bit of peephole optimisation, converting `ife` and
 `loop` to branch instructions so that it doesn't have to push the
@@ -112,6 +128,4 @@ to the lexical stack, runs the stack top, and moves the item back
 to the stack top.
 
 It also links all the word calls so they point directly to their
-entry points rather than them up by name (which is a linear look-up
-because I haven't been bothered to add a couple of words to each
-dictionary entry to turn it into a binary tree).
+entry points rather than them up by name.

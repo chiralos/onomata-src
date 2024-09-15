@@ -166,6 +166,79 @@ void termmodeCode(void) {
   pushInt(ioctl(fd,KB_CMD_SET_MODE,(void *)x));
 }
 
+static Byte inASM(uint8_t port) __naked {
+__asm
+  ld c,a
+  in a,(c)
+  ret
+__endasm;
+}
+
+void z80inCode(void) {
+  env.sp[-1] = inASM((Byte)env.sp[-1]);
+}
+
+static void outASM(uint8_t port, uint8_t byte) __naked {
+__asm
+  ld c,a
+  out (c),l
+  ret
+__endasm;
+}
+
+void z80outCode(void) {
+  Byte byte = popInt();
+  Byte port = popInt();
+  outASM(port,byte);
+}
+
+static void tophysicalASM(uint8_t dstH8, uint16_t dstL16, uint16_t src, uint16_t len) __naked {
+  // a=dstH8
+  // de=dstL16
+  // stack top -> src, len
+  __asm__ (
+    "pop iy ; save return address\n"
+    "pop hl ; stack -> len (hl=src)\n"
+    "pop bc ; stack ->  (bc=len)\n"
+    "di\n"
+    "ex af,af'\n"
+    "xor a ; zero two highest bits for page 0\n"
+    "in a, (0xF0)\n"
+    "push af ; stack -> saved_page0\n"
+    "ex af,af'\n"
+    "sla a\n"
+    "sla a\n"
+    "push de ; stack -> dstL16, saved_page0\n"
+    "srl d\n"
+    "srl d\n"
+    "srl d\n"
+    "srl d\n"
+    "srl d\n"
+    "srl d\n"
+    "or d\n"
+    "out (0xF0),a\n"
+    "pop de ; stack -> saved_page0\n"
+    "ld a,d\n"
+    "and #0x3f ; mask off high bits to point to page 0\n"
+    "ld d,a\n"
+    "ldir\n"
+    "pop af\n"
+    "out (0xF0),a\n"
+    "ei\n"
+    "push iy\n"
+    "ret"
+  );
+}
+
+void tophysicalCode(void) {
+  Word len = env.sp[-1];
+  Byte* srcPtr = (Byte *)env.sp[-2];
+  popCode();
+  Word dstL16 = popInt(); // dest low bytes
+  Word dstH8  = popInt() & 0x00ff; // dest high byte
+  tophysicalASM((uint8_t)dstH8, (uint16_t)dstL16, (uint16_t)srcPtr, (uint16_t) len);
+}
+
 ////////   
 // Notes
 /*

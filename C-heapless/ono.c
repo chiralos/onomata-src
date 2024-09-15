@@ -449,20 +449,25 @@ MATHOP(addCode,+)
 MATHOP(subCode,-)
 MATHOP(mulCode,*)
 
-void divCode(void) {
+void divmodCode(void) {
   Int x = popInt();
   if (x == 0) THROW(ERR_DIVIDE_BY_ZERO);
   Int y = popInt();
-  pushInt(y / x);
+  Opcode op = env.pc[0];
+  if (op != OP_MOD)
+    pushInt(y / x);
+  if (op != OP_DIV) {
+    Int r = y % x;
+    pushInt(r < 0 ? r + (x < 0 ? -x : x) : r);
+  }
 }
 
-void modCode(void) {
+void absCode(void) { 
   Int x = popInt();
-  if (x == 0) THROW(ERR_DIVIDE_BY_ZERO);
-  Int y = popInt();
-  Int r = y % x;
-  pushInt(r < 0 ? r + (x < 0 ? -x : x) : r);
+  pushInt(x < 0 ? -x : x);
 }
+
+void negCode(void) { pushInt(-popInt()); }
 
 MATHOP(bitandCode,&)
 MATHOP(bitorCode,|)
@@ -898,21 +903,32 @@ void parsePartCode(void) {
   pushInt(err);
 }
 
-void overwriteCode(void) {
-  void* src;
+void cpyCode(void) {
   Word srcLen = env.sp[-1];
-  Word* a = stack2();
+  Byte* src;
   if (env.sp[0] == TAG_BYTES) {
-    src = (void *)(a + 1);
+    src = (Byte *)itemBase(env.sp);
   } else {
-    src = (void *)env.sp[-2];
+    src = (Byte*)env.sp[-2];
   }
-  env.sp = a;
-  Word dstLen = env.sp[-1];
-  if (srcLen > dstLen)
-    THROW(ERR_ARRAY_BOUNDS);
-  memmove((void *)(env.sp[-2]),src,srcLen);
   popCode();
+  Word dstLen = env.sp[-1];
+  Byte *dst = (Byte *)env.sp[-2];
+  popCode();
+  Opcode op = env.pc[0];
+  while (true) {
+    if (srcLen > dstLen) {
+      if (op == OP_CPY)
+        THROW(ERR_ARRAY_BOUNDS);
+      srcLen = dstLen;
+    }
+    if (dstLen > 0)
+      memmove((void *)dst,(void *)src,srcLen);
+    dst    += srcLen;
+    dstLen -= srcLen;
+    if (dstLen == 0 || op == OP_CPY)
+      break;
+  }
 }
 
 void peekpokeCode(void) {

@@ -2,7 +2,7 @@
 
 Env env;
 
-#define DEFAULT_MEM_SIZE_WORDS 1024
+#define DEFAULT_MEM_SIZE_WORDS 8192
 Word mem[DEFAULT_MEM_SIZE_WORDS];
 
 int main(int argc, char** argv) {

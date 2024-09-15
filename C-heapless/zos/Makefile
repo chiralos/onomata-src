@@ -19,7 +19,7 @@ INTTYPE=int16_t
 WORDTYPE=uint16_t
 TARGETDIR=zos
 
-CFLAGS=-mz80 --std-c99 -c --codeseg TEXT -I${ZOS_C_HEADERS} -I.. --disable-warning 85
+CFLAGS=-mz80 --std-c99 -c --codeseg TEXT -I${ZOS_C_HEADERS} -I. -I.. --disable-warning 85
 LDFLAGS=-n -mjwx -i -b _HEADER=0x4000 $(SDLD_FLAGS) -k $(ZOS_PATH)/kernel_headers/sdcc/lib -l z80
 RELS=main.rel body.rel bytecode.rel iolib.rel escapechars.rel parser.rel \
 info-table.rel jump-table.rel bytecode-prim-table.rel env.rel optimiser.rel

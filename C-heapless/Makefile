@@ -1,7 +1,7 @@
 ####################
 # Onomata C Heapless
 
-CFLAGS = -ggdb -DWORDTYPE=${WORDTYPE} -DINTTYPE=${INTTYPE}
+CFLAGS = -DWORDTYPE=${WORDTYPE} -DINTTYPE=${INTTYPE} -I${TARGETDIR}
 OBJS = parser.o parser-recursive.o escapechars.o info-table.o \
 env.o optimiser.o bytecode.o
 

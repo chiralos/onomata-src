@@ -44,6 +44,9 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "mul",                  "nn"  }, // OP_SUB
   { "div",                  "nn"  }, // OP_DIV
   { "mod",                  "nn"  }, // OP_MOD
+  { "divmod",               "nn"  }, // OP_DIVMOD
+  { "abs",                  "n"   }, // OP_ABS
+  { "neg",                  "n"   }, // OP_NEG
 
   { "bit/and",              "nn"  }, // OP_BITAND
   { "bit/or",               "nn"  }, // OP_BITOR
@@ -76,7 +79,8 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "str/set",              "nns" }, // OP_STRSET
   { "parse-int",            "s"   }, // OP_PARSEINT
 
-  { "overwrite",            "mp"  }, // OP_OVERWRITE
+  { "cpy",                  "mp"  }, // OP_CPY
+  { "fill",                 "mp"  }, // OP_FILL
   { "peek",                 "np"  }, // OP_PEEK
   { "poke",                 "nnp" }, // OP_POKE
   { "peek-int",             "np"  }, // OP_PEEKINT
@@ -132,6 +136,8 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
 #endif
   { "freeze",               ""    }, // OP_FREEZE
   { "exit",                 ""    }, // OP_EXIT
+
+#include "target-infotable.h"
 
   { "loop",                 "r"   }, // OP_LOOP
   { "write-line",           "s"   }, // OP_WRITELINE

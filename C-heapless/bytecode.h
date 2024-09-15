@@ -35,6 +35,9 @@ typedef enum Opcode {
   OP_MUL,
   OP_DIV,
   OP_MOD,
+  OP_DIVMOD,
+  OP_ABS,
+  OP_NEG,
 
   OP_BITAND,
   OP_BITOR,
@@ -67,7 +70,8 @@ typedef enum Opcode {
   OP_STRSET,
   OP_PARSEINT,
 
-  OP_OVERWRITE,
+  OP_CPY,
+  OP_FILL,
   OP_PEEK,
   OP_POKE,
   OP_PEEKINT,
@@ -118,6 +122,8 @@ typedef enum Opcode {
   OP_DEF,
   OP_FREEZE,
   OP_EXIT,
+
+#include "target-opcodes.h"
 
   OP_LOOP,
   OP_WRITELINE,
