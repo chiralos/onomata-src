@@ -232,7 +232,11 @@ static void tophysicalASM(uint8_t dstH8, uint16_t dstL16, uint16_t src, uint16_t
 
 void tophysicalCode(void) {
   Word len = env.sp[-1];
-  Byte* srcPtr = (Byte *)env.sp[-2];
+  Byte* srcPtr;
+  if (env.sp[0] == TAG_BUF)
+    srcPtr = (Byte *)env.sp[-2];
+  else
+    srcPtr = (Byte *)itemBase(env.sp);
   popCode();
   Word dstL16 = popInt(); // dest low bytes
   Word dstH8  = popInt() & 0x00ff; // dest high byte

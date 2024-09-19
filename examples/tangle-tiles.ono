@@ -1,0 +1,114 @@
+"vars.ono"  load-once
+
+"tile-buf" 256 def-mem
+
+"hex-str-to-bin" (
+  dup len "" bry
+  ( 1 sub
+    1 up 1 up 1 sbs bry
+    2 pack
+    ( "0x" swp str/cat parse-int pop
+      chr swp str/cat) dip
+    unpack
+    dup 0 eq (pop false) (true) ife
+  ) loop
+  pop
+) def
+
+"set-sprite-line" (
+  hex-str-to-bin 1 up 16 mul
+  tile-buf swp 16 sbs
+  swp cpy 1 add
+) def
+
+"fd" def-int-var
+
+"make-tiles" (
+  "tangle.tiles" write-only creat bit/or trunc bit/or open
+  dup 0 lt 
+  (pop "open error" write-line)
+  ( set-fd
+
+    0
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "999bbbbbbbb99999" set-sprite-line
+    "99bbbbbbbb999999" set-sprite-line
+    "bbbbbbbbb99999bb" set-sprite-line
+    "bbbbbbbb99999bbb" set-sprite-line
+    "bbbbbbb99999bbbb" set-sprite-line
+    "bbbbbb99999bbbbb" set-sprite-line
+    "bbbbb99999bbbbbb" set-sprite-line
+    "bbbb99999bbbbbbb" set-sprite-line
+    "bbb99999bbbbbbbb" set-sprite-line
+    "bb99999bbbbbbbbb" set-sprite-line
+    "999999bbbbbbbb99" set-sprite-line
+    "99999bbbbbbbb999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    pop
+    fd tile-buf write pop
+
+    0
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "99999bbbbbbbb999" set-sprite-line
+    "999999bbbbbbbb99" set-sprite-line
+    "bb99999bbbbbbbbb" set-sprite-line
+    "bbb99999bbbbbbbb" set-sprite-line
+    "bbbb99999bbbbbbb" set-sprite-line
+    "bbbbb99999bbbbbb" set-sprite-line
+    "bbbbbb99999bbbbb" set-sprite-line
+    "bbbbbbb99999bbbb" set-sprite-line
+    "bbbbbbbb99999bbb" set-sprite-line
+    "bbbbbbbbb99999bb" set-sprite-line
+    "99bbbbbbbb999999" set-sprite-line
+    "999bbbbbbbb99999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    pop
+    fd tile-buf write pop
+
+    0
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "bbb9bbbbbbbb9bbb" set-sprite-line
+    "bbb9bbbbbbbb9bbb" set-sprite-line
+    "bbb9bbbbbbbb9bbb" set-sprite-line
+    "bbb9bbbbbbbb9bbb" set-sprite-line
+    "bbb9bbbbbbbb9bbb" set-sprite-line
+    "bbb9bbbbbbbb9bbb" set-sprite-line
+    "bbb9bbbbbbbb9bbb" set-sprite-line
+    "bbb9bbbbbbbb9bbb" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    pop
+    fd tile-buf write pop
+
+    0
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999999999999999" set-sprite-line
+    "bbbbbbbbbbbbbbbb" set-sprite-line
+    "bbbbbbbbbbbbbbbb" set-sprite-line
+    "bbbbbbbbbbbbbbbb" set-sprite-line
+    "bbbbbbbbbbbbbbbb" set-sprite-line
+    "bbbbbbbbbbbbbbbb" set-sprite-line
+    "bbbbbbbbbbbbbbbb" set-sprite-line
+    "bbbbbbbbbbbbbbbb" set-sprite-line
+    "bbbbbbbbbbbbbbbb" set-sprite-line
+    "9999999999999999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    "9999bbbbbbbb9999" set-sprite-line
+    pop
+    fd tile-buf write pop
+
+    fd close pop
+  ) ife
+) def

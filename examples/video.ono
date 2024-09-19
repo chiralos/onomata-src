@@ -6,7 +6,9 @@
 "io-mapper-bank" vid-io-mapper 0xE   add quo def
 
 "vid-io-ctrl-stat"                 (0x90) def
-"io-ctrl-vid-mode" vid-io-ctrl-stat 0xC   add quo def
+
+"io-ctrl-vid-mode" vid-io-ctrl-stat   0xC add quo def
+"io-ctrl-status-reg" vid-io-ctrl-stat 0xD add quo def
 
 "vid-mode-text-640"     (0) def
 "vid-mode-text-320"     (1) def
@@ -14,6 +16,9 @@
 "vid-mode-gfx-320-8bit" (5) def
 "vid-mode-gfx-640-4bit" (6) def
 "vid-mode-gfx-320-4bit" (7) def
+
+"vid-status-enable"  (0x80) def
+"vid-status-disable" (0x00) def
 
 # video memory
 

@@ -1,0 +1,54 @@
+"video.ono"    load-once
+"vars.ono"     load-once
+"prng.ono"     load-once
+"terminal.ono" load-once
+
+"buffer" 4096 def-mem
+"tile-buf" buffer 0 256 sbs quo def
+
+"tangle" (
+  "tangle.tiles" read-only open
+  dup 0 lt 
+  (pop "open error" write-line)
+  (tangle-fd) ife
+) def
+
+"tangle-fd" ( 
+  dup tile-buf read pop
+  vid-mem-tile 0x0000 add tile-buf to-physical
+  dup tile-buf read pop
+  vid-mem-tile 0x0100 add tile-buf to-physical
+  dup tile-buf read pop
+  vid-mem-tile 0x0200 add tile-buf to-physical
+  dup tile-buf read pop
+  vid-mem-tile 0x0300 add tile-buf to-physical
+  close pop
+
+  io-ctrl-status-reg vid-status-disable z80/out
+
+  buffer 0 3200 sbs
+  dup "\x00\x01\x00" fill
+
+  io-ctrl-vid-mode vid-mode-gfx-640-8bit z80/out
+  vid-mem-layer0 dig to-physical
+
+  io-ctrl-status-reg vid-status-enable z80/out
+
+  set-nonblocking
+
+  ( vid-mem-layer0
+    rng 30 mod 80 mul add # row
+    rng 40 mod add        # col
+    rng 4 mod chr         # random tile
+    to-physical           # poke into layer
+
+    stdin 1 read-str pop  # sample keyboard
+    dup len 0 gt
+    (0 str/get 128 gte)   # quit but ignore keyup
+    (pop true) ife        # continue
+  ) loop
+
+  stdin term/reset pop
+  
+  io-ctrl-vid-mode vid-mode-text-640 z80/out
+)  def
