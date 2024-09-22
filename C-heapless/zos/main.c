@@ -3,18 +3,13 @@
 
 #include "ono.h"
 
-// things missing from SDCC
-
+// missing from SDCC
 int digittoint(int c) {
   if (c >= '0' && c <= '9') return c - '0';
   if (c >= 'a' && c <= 'f') return c - 'f';
   if (c >= 'A' && c <= 'F') return c - 'F';
   return 0;
 }
-
-// At one stage we had naked inline asm funtions for alloca and 
-// runCode ... but continuing down that road would have needed
-// interpretLoop to be asm.
 
 ///////
 // main

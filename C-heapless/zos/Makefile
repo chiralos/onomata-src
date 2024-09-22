@@ -63,9 +63,15 @@ onoi : ${RELS}
 	${LD} ${LDFLAGS} ono-zos.ihx ${ZOS_CRT0} ${RELS}
 	${OBJCOPY} --input-target=ihex --output-target=binary ono-zos.ihx onoi
 
+glue : glue.c
+	${CC} ${CFLAGS} -o glue.rel -c glue.c
+	${LD} ${LDFLAGS} glue.ihx ${ZOS_CRT0} glue.rel
+	${OBJCOPY} --input-target=ihex --output-target=binary glue.ihx glue
+
+
 # utils
 
 clean :
 	rm -f *.bin *.lis *.o *.ihx *.map *.noi *.lst *.asm *.rel *.sym
 	rm -f *.mem *.lk
-	rm -f onoi make-bytecode-prims bytecode-prims.c
+	rm -f make-bytecode-prims bytecode-prims.c
