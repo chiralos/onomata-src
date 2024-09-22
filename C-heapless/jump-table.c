@@ -72,6 +72,8 @@ extern void truncCode              (void);
 extern void creatCode              (void);
 extern void nonblockCode           (void);
 
+extern void execvcallCode          (void);
+
 extern void termclsCode            (void);
 extern void termcursortoCode       (void);
 extern void termmodeCode           (void);
@@ -204,6 +206,8 @@ void (*basicOpJumpTable[N_BASIC_OPS])(void) = {
   truncCode,              // OP_TRUNC
   creatCode,              // OP_CREAT
   nonblockCode,           // OP_NONBLOCK
+
+  execvcallCode,          // OP_EXECVCALL
 
   termclsCode,            // OP_TERMCLR
   termcursortoCode,       // OP_TERMCURSORTO

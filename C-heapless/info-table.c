@@ -108,6 +108,8 @@ const InstructionInfo opInfoTable[N_BASIC_OPS] = {
   { "creat",                ""    }, // OP_CREAT
   { "nonblocking",          ""    }, // OP_NONBLOCKING
 
+  { "execv-call",           "ts"  }, // OP_EXECVCALL
+
   { "term/cls",             "n"   }, // OP_TERMCLS
   { "term/cursor-to",       "nnn" }, // OP_TERMCURSORTO
   { "term/raw",             "n"   }, // OP_TERMRAW

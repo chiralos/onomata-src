@@ -1,6 +1,8 @@
 #include "ono.h"
 #include "env.h"
 
+#include <stdlib.h> // for NULL
+
 #include <zos_sys.h>
 #include <zos_time.h>
 #include <zos_vfs.h>
@@ -166,6 +168,32 @@ void termmodeCode(void) {
   pushInt(ioctl(fd,KB_CMD_SET_MODE,(void *)x));
 }
 
+void execvcallCode(void) {
+  Word* fnItem = stack2();
+  Word* popped = next(fnItem);
+  Word tSize = env.sp[-2];
+  overflowCheck(tSize+1); // space for argv
+  // see [2]
+  for (Word i=0;i < tSize;i++) {
+    Word* p = indexStruct(0,env.sp);
+    if (p[0] != TAG_BYTES) THROW(ERR_BAD_ARGUMENT);
+    char* argn  = (char*)itemBase(p);
+    argn[p[-1]] = '\0';
+    env.sp[1+i] = (Word)argn;
+  }
+  env.sp[1+tSize] = (Word)NULL;
+  char* fn = (char*)itemBase(fnItem);
+  fn[fnItem[-1]] = '\0';
+  env.sp = popped;
+  uint8_t r;
+  zos_err_t err = exec(EXEC_PRESERVE_PROGRAM, fn, (char **)(&env.sp[1]), &r);
+  if (err != ERR_SUCCESS) {
+    pushInt(-err);
+  } else {
+    pushInt(r);
+  }
+}
+
 static Byte inASM(uint8_t port) __naked {
 __asm
   ld c,a
@@ -254,4 +282,7 @@ cloned or stdin is not connected to the keyboard.
 
 Also, here is no KB_CMD_GET_MODE, so we can't separately
 control raw/cooked and nonblocking.
+
+[2] We mangle stack, possibly overwriting item sizes with 
+    null terminator bytes, but then theyy are dropped anyway.
 */

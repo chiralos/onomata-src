@@ -35,6 +35,8 @@ Host-specific words:
 
 ```
 
+The target of `to-physical` must not overlap a 16 page boundary.
+
 ### Generic Unix target
 
 Should just need make and a C compiler.

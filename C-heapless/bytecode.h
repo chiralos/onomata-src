@@ -99,6 +99,8 @@ typedef enum Opcode {
   OP_CREAT,
   OP_NONBLOCK,
 
+  OP_EXECVCALL,
+
   OP_TERMCLS,
   OP_TERMCURSORTO,
   OP_TERMRAW,

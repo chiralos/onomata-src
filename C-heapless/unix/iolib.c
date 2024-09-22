@@ -6,6 +6,7 @@
 #include <stdio.h> // for snprintf
 #include <string.h> // for strlen
 #include <fcntl.h>
+#include <sys/wait.h>
 
 void sleepmilliCode(void) {
   Int dt = popInt();
@@ -136,9 +137,45 @@ void termmodeCode(void) {
   pushInt(r);
 }
 
+void execvcallCode(void) {
+  Word* fnItem = stack2();
+  Word* popped = next(fnItem);
+  Word tSize = env.sp[-2];
+  overflowCheck(tSize+1); // space for argv
+  // see [2]
+  for (Word i=0;i < tSize;i++) {
+    Word* p = indexStruct(0,env.sp);
+    if (p[0] != TAG_BYTES) THROW(ERR_BAD_ARGUMENT);
+    char* argn  = (char*)itemBase(p);
+    argn[p[-1]] = '\0';
+    env.sp[1+i] = (Word)argn;
+  }
+  env.sp[1+tSize] = (Word)NULL;
+  char* fn = (char*)itemBase(fnItem);
+  fn[fnItem[-1]] = '\0';
+
+  pid_t pid = fork();
+  if (pid == 0) {
+    if (execv(fn, (char **)(&env.sp[1])) < 0) {
+      perror("execv returned");
+    }
+  } else {
+    int status;
+    waitpid(pid,&status,0);
+    env.sp = popped;
+    if (WIFEXITED(status)) 
+      pushInt(WEXITSTATUS(status));
+    else
+      pushInt(-1);
+  }
+}
+
 ////////
 // Notes
 /*
 [1] We should probably try to do better than this.
     byte because we just popped an int.
+
+[2] We mangle stack, possibly overwriting item sizes with 
+    null terminator bytes, but then theyy are dropped anyway.
 */

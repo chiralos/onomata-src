@@ -1,0 +1,7 @@
+*.asm
+*.rel
+*.lst
+*.sym
+*.ihx
+*.noi
+*.map

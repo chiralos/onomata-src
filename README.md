@@ -1,4 +1,4 @@
-# Some Onomata hosts
+# Some stack language hosts
 
 ## [Haskell](Haskell/README.md)
 
@@ -6,13 +6,13 @@
 
 ## Language
 
-**NOTE: version 0.1 : everything here is subject to breaking change**
+**WARNING : this language is unstable and _will_ undergo breaking changes**
 
-Onomata is set of standard words for a concatenative programming
+Here is a set of standard words for a concatenative programming
 language, along with a trivial syntax and semantics for programs
-(expressions).
+(expressions). Provisionlly the language is called "Onomata".
 
-Onomata expressions are S-expressions. That is, literals, identifiers,
+Expressions are S-expressions. That is, literals, identifiers,
 and balanced parentheses.
 
 The semantics of the language is defined as follows:
@@ -36,14 +36,13 @@ and types; and an algebra defining valid program transformations.
 | Buf   | reference to mutable byte array |
 | Tup   | tuple                           |
 | (A)   | type variable (single item)     |
-| A     | type variable N items           |
+| A     | arbitrary stack state           |
 
-In the following all-caps types are type variables.  `(A)` means a
-single arbitrary item. `A` means a finite number (including zero)
-items.
+All-caps types are type variables: `(A)` means a single arbitrary
+item, `A` means a an arbitrary stack state.
 
-Most words are 'statically typed' i.e. these consume and produce 
-a fixed, finite number of stack items.
+Nearly all words are 'statically typed' i.e. these consume and
+produce a fixed, finite number of stack items.
 
 ### Traits
 
@@ -67,7 +66,7 @@ on the right. This means that a sequence of pushes looks like the
 resulting stack.
 
 Generally, if there is a conventional ordering of arguments to
-functions, the Onomata word will use the same sequence ordering
+functions, the word will use the same sequence ordering
 i.e. deepest stack item for leftmost argument, stack top for
 rightmost. So `x y sub` is `x - y`.
 
@@ -167,6 +166,8 @@ top. Update operations put the value to be inserted in between.
 | creat        |                          -> Int         |
 | nonblocking  |                          -> Int         |
 
+| execv-call   | Str Tup                  -> Int         | filename argv
+
 | term/cls             | Int               ->            |
 | term/cursor-to       | Int Int Int       ->            | fd x y ->
 | term/raw             | Int               -> Int        | fd -> err
@@ -226,7 +227,7 @@ well-typed words. eg `pack-2` is well typed; `pack` isn't, but
 interactive environment feature and not a program-forming one).
 Think of it as an alias for `global/def` or something.
 
-This is a freeform way of structuring onomata programs that is
+This is a freeform way of structuring programs that is
 probably not a good idea. On the plus side it requires zero additional
 syntax, is easy to understand, and allows compile-time programming.
 The down side is that compilation becomes undecidable, and it is
