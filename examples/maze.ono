@@ -29,16 +29,16 @@
   bry pop pop
 ) def
 
-"set-cell-screen-update" ( # (c x y ->)
-  # pop pop pop
-  cursor-to 
-  cell2ascii stdout swp write pop
-) def
-
 "set-cell" ( # (c x y ->)
   3 pack dup unpack
   xy2i a bry poke
   unpack set-cell-screen-update
+) def
+
+"set-cell-screen-update" ( # (c x y ->)
+  # pop pop pop
+  cursor-to 
+  cell2ascii stdout swp write pop
 ) def
 
 # cell encoding:
@@ -56,6 +56,10 @@
 
 ## ASCII readout ##
 
+"readout" (
+  0 (dup readout-line 1 add) n repeat pop
+) def
+
 "readout-line" ( # (n ->)
   m mul # starting position
   ( dup i2xy get-cell cell2ascii stdout swp write pop
@@ -63,10 +67,6 @@
   ) m repeat
   pop
   nl
-) def
-
-"readout" (
-  0 (dup readout-line 1 add) n repeat pop
 ) def
 
 ## entry point ##
@@ -184,7 +184,9 @@
 ## banner ##
 
 "help" (
-  stdout "usage: WIDTH HEIGHT maze\n" write pop
+  "usage: WIDTH HEIGHT maze" write-line
 ) def
+
+freeze
 
 help

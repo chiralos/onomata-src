@@ -1,4 +1,3 @@
-
 "sieve" (sieve-start sieve-scan) def
 
 "sieve-start"
@@ -62,7 +61,10 @@ def
   "i"   def-int-var
 ) def
 
+"help" ("usage: sieve" write-line) def
+
 sieve-init
 
+freeze
 
-
+help

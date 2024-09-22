@@ -52,3 +52,9 @@
   
   io-ctrl-vid-mode vid-mode-text-640 z80/out
 )  def
+
+"help" ("usage: tangle" write-line) def
+
+freeze
+
+help

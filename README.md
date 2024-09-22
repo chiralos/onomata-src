@@ -1,44 +1,66 @@
-# Some stack language hosts
-
-## [Haskell](Haskell/README.md)
+# Some prototype Onomata implementations
 
 ## [Heapless C](C-heapless/README.md)
+
+## [Haskell](Haskell/README.md)
 
 ## Language
 
 **WARNING : this language is unstable and _will_ undergo breaking changes**
 
-Here is a set of standard words for a concatenative programming
-language, along with a trivial syntax and semantics for programs
-(expressions). Provisionlly the language is called "Onomata".
+The language implemented here is really too simple to be dignified with
+a name. Expressions are S-expressions (that is, literals, identifiers,
+and balanced parentheses), and the semantics are:
 
-Expressions are S-expressions. That is, literals, identifiers,
-and balanced parentheses.
-
-The semantics of the language is defined as follows:
 * literal numbers and strings are pushed onto the stack
 * parenthesised expressions push the denoted procedure onto the stack
 * words are looked up in an environment and executed
 
-**What appears here is an early sketch of a langauge.** 
-The full language would have an open-ended vocabulary, namespaces,
-types, type traits, additional syntax for defining programs, modules,
-and types; and an algebra defining valid program transformations.
+Below we define a set of standard words, provisionally called
+"Onomata".
+
+### Examples
+
+See [Examples](examples/) . The file extension ".ono" can be pronounced
+"oh no" because that is the sound you make when you realise what
+language you are dealing with.
+
+It should be possible run to each of the examples in an interpreter
+with e.g. `"sieve.ono" load` (which should display a help line when finished).
+Note that the Zeal 8-bit implementation is _slow_ and takes several
+seconds to load even small files.
+
+| File              | Notes                                                              |
+|-------------------|--------------------------------------------------------------------|
+| sieve.ono         | Prints a few prime numbers. Uses integers in byte arrays.          |
+| maze.ono          | Animates the construction of a maze. Uses terminal cursor control. |
+| terminal-test.ono | Exercises terminal non-blocking input.                             |
+| tangle.ono | (Zeal host only) Draws a pattern on the screen and randomly messes it up. |
+
+These programs use some (pure Onomata) libraries:
+
+| File         | Notes                                         |
+|--------------|-----------------------------------------------|
+| vars.ono     | Integer variables and arrays.                 |
+| prng.ono     | An "xorshift" pseudo random number generator. |
+| lib.ono      | Misc.                                         |
+| terminal.ono | Tools for terminal control.                   |
+| video.ono    | A few bindings for Zeal video card.           |
 
 ### Types
 
-| Type  | Notes                           |
-|-------|---------------------------------|
-| Bool  |                                 |
-| Int   | signed; host-dependent width    |
-| Str   | immutable byte array            |
-| ->    | procedures / programs           |
-| Buf   | reference to mutable byte array |
-| Tup   | tuple                           |
-| (A)   | type variable (single item)     |
-| A     | arbitrary stack state           |
+| Type  | Notes                                  |
+|-------|----------------------------------------|
+| Bool  |                                        |
+| Int   | signed; host-dependent width           |
+| Str   | immutable byte array                   |
+| ->    | procedures / programs                  |
+| Buf   | reference to mutable byte array        |
+| Tup   | tuple (heterogeneously typed sequence) |
+| (A)   | type variable (single item)            |
+| A     | arbitrary stack state                  |
 
-All-caps types are type variables: `(A)` means a single arbitrary
+All-caps types are type variables: `(A)` means a single stack
 item, `A` means a an arbitrary stack state.
 
 Nearly all words are 'statically typed' i.e. these consume and
@@ -47,7 +69,7 @@ produce a fixed, finite number of stack items.
 ### Traits
 
 We currently have some ad-hoc polymorphism. Where these trait names
-appear in the table below, it stands for a single type variable
+appear in the table below, they stand for a single type variable
 constrained to be a member of the trait. So e.g. 
 `Ord Ord -> Bool` means `(A) (A) -> Bool where (A) is Ord` .
 
@@ -70,9 +92,13 @@ functions, the word will use the same sequence ordering
 i.e. deepest stack item for leftmost argument, stack top for
 rightmost. So `x y sub` is `x - y`.
 
-When there is an operation than has a container and an index (get
-and set words), the container goes on the bottom and the index on
-top. Update operations put the value to be inserted in between.
+When there is an operation than has a container and an index (eg
+get and set words), the container goes on the bottom and the index
+on top. Update operations put the value to be inserted in between.
+
+All these names should be thought of as abbreviations for longer
+names in a thematic hierarchy e.g. `ono/math/add` . Separately, there
+would be useful groupings for implementation and importation.
 
 ```
 
@@ -130,8 +156,8 @@ top. Update operations put the value to be inserted in between.
 | tup/get      | Tup Int                  -> (A)         | [2]
 | tup/set      | Tup (A) Int              -> Tup         | [2]
 
-| str          | Sf                       -> Str         |
-| chr          | Int                      -> Str         |
+| str          | Sf                       -> Str         | to string
+| chr          | Int                      -> Str         | single-byte string
 | str/cat      | Str Str                  -> Str         |
 | str/get      | Str Int                  -> Int         | peek byte
 | str/set      | Str Int Int              -> Str         | with updated byte
@@ -220,19 +246,18 @@ well-typed words. eg `pack-2` is well typed; `pack` isn't, but
 [6] Top result is number of bytes parsed; if zero second is undefined.
 
 [7] Kind of precarious, since once the buf is dropped the memory
-    leaks unless the buf reference is stored somwhere. See def-mem.
+    leaks unless the buf reference is stored somewhere. See def-mem.
 
 [8] This `def` works with a single global scope; and bindings are
     permanent (ignore `undef`, which should be considered an
 interactive environment feature and not a program-forming one).
 Think of it as an alias for `global/def` or something.
 
-This is a freeform way of structuring programs that is
-probably not a good idea. On the plus side it requires zero additional
-syntax, is easy to understand, and allows compile-time programming.
-The down side is that compilation becomes undecidable, and it is
-difficult to define a standard for what a compiler 'should' be able
-to accept.
+This is a freeform way of structuring programs that is probably not
+a good idea. On the plus side it requires zero additional syntax,
+is easy to understand, and allows compile-time programming.  The
+down side is that compilation becomes undecidable, and it is difficult
+to define a standard for what a compiler 'should' be able to accept.
 
 [9] Load and run a program from file or file descriptor. Actually
      streams program in and runs it incrementally.
@@ -247,3 +272,18 @@ and saved it. Cannot save frozen code.
 [12] Interactive environment commands. Not part of expression
 language proper.
 
+### Notes
+
+Onomata is a [Concatenative][concat] programming language. I came
+across this part of language design space via [Joy][joy]. Semantically
+Onomata is essentially the same (I think) as [Cat][cat] : Onomata
+should be statically typeable.
+
+What appears here is an early sketch of a language: the full language
+would have an open-ended vocabulary, namespaces, types, type traits,
+additional syntax for defining programs, modules, and types; and
+an algebra defining valid program transformations.
+
+[concat]: https://en.wikipedia.org/wiki/Concatenative_programming_language
+[joy]: https://en.wikipedia.org/wiki/Joy_(programming_language)
+[cat]: https://github.com/cdiggins/cat-language

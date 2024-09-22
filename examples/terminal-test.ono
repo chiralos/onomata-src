@@ -37,3 +37,9 @@
   stdin term/reset pop
   nl
 ) def
+
+"help" ("usage:\n  raw-test\n  nonblocking-test" write-line) def
+
+freeze
+
+help
