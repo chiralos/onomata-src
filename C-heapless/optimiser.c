@@ -23,22 +23,22 @@ Err peepholeDefToStackTop(int i, Word* sz, Word* originalSize) {
   return ERR_OK;
 }
 
-static bool linkProc(Seg code) {
-  while (code.cursor < code.end) {
+static bool linkProc(Seg* code) {
+  while (code->cursor < code->end) {
     Word x,len;
-    Opcode op = decodeInstruction(code.cursor,&x,&len);
+    Opcode op = decodeInstruction(code->cursor,&x,&len);
     if (op == OP_PUSH_CODE) {
       Seg sub;
-      sub.end = code.cursor + len;
+      sub.end = code->cursor + len;
       sub.cursor = sub.end - x;
-      if(!linkProc(sub)) return false;
+      if(!linkProc(&sub)) return false;
     } else if (op == OP_CALL_STATIC) {
       Word* dp = indexDict(x);
       dp = next(dp);
       dp--; // we point at the size word of the target def
-      encodeWord(code.cursor+1,(Word)dp,WORDSIZE); // see [7]
+      encodeWord(code->cursor+1,(Word)dp,WORDSIZE); // see [7]
     }
-    code.cursor += len;
+    code->cursor += len;
   }
   return true;
 }
@@ -93,7 +93,7 @@ Err freezeAndLink(void) {
     Seg code;
     code.cursor = (Code)itemBase(dp);
     code.end = code.cursor + dp[-1];
-    linkProc(code);
+    linkProc(&code);
   }
 
   // then move frozen top up

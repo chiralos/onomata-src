@@ -75,20 +75,20 @@ static void writeInt(Int x, bool sgnd, int fd) {
   ioWrite(fd,p,n);
 }
 
-static void writeString(Seg src, int fd) {
+static void writeString(Seg* src, int fd) {
   EMITCHAR('"');
-  for (;src.cursor < src.end;src.cursor++) {
+  for (;src->cursor < src->end;src->cursor++) {
     char ec;
-    if (charToEsc(*src.cursor,&ec)) {
+    if (charToEsc(*(src->cursor),&ec)) {
       EMITCHAR('\\');
       EMITCHAR(ec);
-    } else if (!isprint(*src.cursor)) {
+    } else if (!isprint(*(src->cursor))) {
       EMITCHAR('\\');  
       EMITCHAR('x');
-      EMITCHAR(TO_DIGIT((*src.cursor >> 4)));
-      EMITCHAR(TO_DIGIT((*src.cursor & 0x0f)));
+      EMITCHAR(TO_DIGIT((*(src->cursor) >> 4)));
+      EMITCHAR(TO_DIGIT((*(src->cursor) & 0x0f)));
     } else {
-      EMITCHAR(*src.cursor);
+      EMITCHAR(*(src->cursor));
     }
   }
   EMITCHAR('"');
@@ -110,19 +110,19 @@ static void writeStruct(Word *sp, int fd) {
 }
 
 // see [4]
-static void writeBytecode(Seg src, int fd) {
+static void writeBytecode(Seg* src, int fd) {
   EMITCHAR('(');
   bool first = true;
-  while (src.cursor < src.end) {
+  while (src->cursor < src->end) {
     if (!first)
       {
       EMITCHAR(' ');
       }
     first      = false;
-    Code ip    = src.cursor;
+    Code ip    = src->cursor;
     Word len, n;
     Opcode op = decodeInstruction(ip,&n,&len);
-    src.cursor += len;
+    src->cursor += len;
     if (op < FIRST_IMMEDIATE_OP) {
       const InstructionInfo* ii = &(opInfoTable[op]);
       ioWrite(fd,ii->name,strlen(ii->name));
@@ -142,13 +142,13 @@ static void writeBytecode(Seg src, int fd) {
           }
           break;
         case OP_PUSH_CODE:
-          subsrc.cursor = src.cursor - n;
-          subsrc.end    = src.cursor;
-          writeBytecode(subsrc,fd);
-          src.cursor = subsrc.end;
+          subsrc.cursor = src->cursor - n;
+          subsrc.end    = src->cursor;
+          writeBytecode(&subsrc,fd);
+          src->cursor = subsrc.end;
           break;
         case OP_CALL_NAME:
-          ioWrite(fd,(char *)(src.cursor - n),n);
+          ioWrite(fd,(char *)(src->cursor - n),n);
           break;
         case OP_CALL_STATIC:
           EMITCHAR('*');
@@ -175,12 +175,12 @@ static void writeStackItem(Word *sp, int fd) {
     case TAG_BYTES:
       src.cursor = (Byte *)itemBase(sp);
       src.end    = src.cursor + sp[-1];
-      writeString(src,fd);
+      writeString(&src,fd);
       break;
     case TAG_CODE:
       src.cursor = (Byte *)itemBase(sp);
       src.end    = src.cursor + sp[-1];
-      writeBytecode(src,fd);
+      writeBytecode(&src,fd);
       break;
     case TAG_STRUCT:
       writeStruct(sp,fd);
@@ -1333,7 +1333,7 @@ void writeDefBody(Word *dp, int fd) {
     Seg src;
     src.cursor = (Code)itemBase(dp);
     src.end    = src.cursor + dp[-1];
-    writeBytecode(src,fd);
+    writeBytecode(&src,fd);
   }
 }
 

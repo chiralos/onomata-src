@@ -14,7 +14,8 @@ SDCC_LIB=${SDCC_BASE}/share/sdcc/lib
 
 CC=sdcc
 LD=sdldz80
-OBJCOPY=gobjcopy
+#OBJCOPY=gobjcopy
+OBJCOPY=objcopy
 INTTYPE=int16_t
 WORDTYPE=uint16_t
 TARGETDIR=zos
