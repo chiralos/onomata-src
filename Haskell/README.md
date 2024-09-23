@@ -17,8 +17,7 @@ The system is dynamically typed and is properly tail-recursive.
 I'm not sure it properly bounds checks all string operations.
 
 It supports a lot of [these](../README.md#language) 
-but not have IO or byte buffers (so no `load` etc), so definitely
-(even more of) a toy.
+but does not have IO or byte buffers (so no `load` etc).
 
 ## Motivatiion
 

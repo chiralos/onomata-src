@@ -6,22 +6,29 @@ September 2024
 
 ### Zeal 8-Bit OS Target
 
+The repo 'zos' directory should contain a compiled binary (it is
+small and standard so I don't feel too bad about including it).
+
 Cross-compiled from Unix. Has been known to build from MacOS and
 WSL Ubuntu.
 
-Requires SDCC (Small Device C Compiler), and Zeal 8-Bit-OS repo for
-headers.
+Requires Zeal 8-Bit-OS for headers: set ZOS_PATH to root repo
+directory (that contains kernel_headers dir).
 
-Look at `C-heapless/zos/Makefile`. Need to set up `ZOS_PATH` and `SDCC_BASE`.
+Requires SDCC (Small Device C Compiler): set SDCC_BASE to 
+sdcc directory containing 'include', 'lib', 'scripts' dir.
+The 'sdcc' apt package on Ubuntu 24.02 works, with SDCC_BASE
+at /usr/share/sdcc.
+
+(On OS X I had to install and use 'gobjcopy' instead of 'objcopy').
+
+Should be able to build with:
 
     cd C-heapless/zos
     make onoi
 
 Generates `onoi` which is a standard ZOS binary. Has been
 tested on the Zeal 8-bit emulator and (occasionally) hardware.
-
-The repo "zos" directory should contain a compiled binary (it is
-small and standard so I don't feel too bad about including it).
 
 There is currently (September 2024) a difficulty in running on Zeal
 hardware, in that the binary is >16K, and the most practical way
